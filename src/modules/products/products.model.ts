@@ -14,10 +14,13 @@ const ProductSchema: Schema<IProduct> = new Schema(
         stock: { type: Number, default: 0 },
         lat: { type: Number, default: 0, required: true },
         long: { type: Number, default: 0, required: true },
-        category : {type : String, enum : ["propertie" , "car" , "boat" , "motorcycle" , "bicycle" , "job" , "book" , "furniture" , "electronic" , "cloth"], required : true},
-        condition : {type : String, enum : ["new" , "used"], required : true},
-        isBoosted : {type : Boolean, default : false},
-        isDeleted : {type : Boolean, default : false}
+        category: { type: String, enum: ["propertie", "car", "boat", "motorcycle", "bicycle", "job", "book", "furniture", "electronic", "cloth"], required: true },
+        condition: { type: String, enum: ["new", "used"], required: true },
+        isBoosted: { type: Boolean, default: false },
+        isDeleted: { type: Boolean, default: false },
+        user: { type: Schema.Types.ObjectId, ref: 'users', required: true },
+        productModel: { type: String, enum: ["properties", "cars", "boats", "motorcycles", "jobs", "others"], required: true },
+        otherDetails: { type: Schema.Types.ObjectId, refPath: 'productModel', required: true },
     },
     { timestamps: true },
 );
