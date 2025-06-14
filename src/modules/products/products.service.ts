@@ -5,17 +5,89 @@ import { Products } from "./products.model";
 import httpStatus from 'http-status'
 
 const allProducts = async (query: Record<string, any>) => {
-    const productModel = new QueryBuilder(Products.find({ isDeleted: false }), query)
-        .search(['name'])
-        .filter()
-        .paginate()
-        .sort();
-    const data: any = await productModel.modelQuery;
-    const meta = await productModel.countTotal();
-    return {
-        data,
-        meta,
+    const page = parseInt(query?.page) || 1;
+    const limit = parseInt(query?.limit) || 10;
+    const skip = (page - 1) * limit;
+
+    const search = query?.searchTerm || "";
+    const category = query?.category || null;
+
+    const filters: any = {
+        title: { $regex: search, $options: "i" }, // text search
     };
+    if (category) filters.category = category;
+
+    const products = await Products.aggregate([
+        // 1. Match by filters
+        { $match: filters },
+
+        // 2. Lookup reviews
+        {
+            $lookup: {
+                from: "reviews",
+                localField: "_id",
+                foreignField: "product",
+                as: "reviews"
+            }
+        },
+
+        // 3. Add avgRating and reviewCount directly from "reviews"
+        {
+            $addFields: {
+                avgRating: {
+                    $cond: [
+                        { $gt: [{ $size: "$reviews" }, 0] },
+                        { $avg: "$reviews.rating" },
+                        0
+                    ]
+                },
+                reviewCount: { $size: "$reviews" }
+            }
+        },
+
+        // 4. Pagination
+        { $skip: skip },
+        { $limit: limit },
+
+        // 5. Optional projection
+        // {
+        //   $project: {
+        //     name: 1,
+        //     price: 1,
+        //     category: 1,
+        //     avgRating: 1,
+        //     reviewCount: 1,
+        //     reviews: 1,
+        //     image: 1
+        //   }
+        // },
+
+        {
+            $lookup: {
+                from: "users",
+                localField: "user",
+                foreignField: "_id",
+                as: "user",
+            },
+        },
+        { $unwind: { path: "$user", preserveNullAndEmptyArrays: true } },
+    ]);
+
+    const total = await Products.countDocuments(filters);
+
+
+    const totalPage = Math.ceil(total / limit);
+
+    const meta = {
+        page,
+        limit,
+        total,
+        totalPage,
+    };
+
+
+    return { data: products, meta }
+
 }
 
 const singleProduct = async (productId: string) => {
@@ -32,13 +104,6 @@ const singleProduct = async (productId: string) => {
 }
 
 const addProduct = async (payload: IProduct, images: string[]) => {
-
-    if (images?.length <= 0) {
-        throw new AppError(
-            httpStatus.BAD_REQUEST,
-            'Minimum 1 image is required',
-        );
-    }
 
     const res = await Products.create({ ...payload, images: images })
 
@@ -86,7 +151,7 @@ const updateProduct = async (payload: upPRod, productId: string, newImages: stri
     } else {
         updateFields.images = [...existImg];
     }
-    
+
 
     const result = await Products.updateOne({ _id: productId }, updateFields)
 

@@ -9,7 +9,7 @@ const ProductSchema: Schema<IProduct> = new Schema(
         title: { type: String, required: true },
         images: { type: [String], required: true },
         price: { type: Number, default: 0 },
-        discounted_price: { type: Number, default: 0 },
+        sellingPrice: { type: Number, default: 0 },
         details: { type: String, required: true },
         stock: { type: Number, default: 0 },
         lat: { type: Number, default: 0, required: true },
@@ -20,9 +20,9 @@ const ProductSchema: Schema<IProduct> = new Schema(
         isDeleted: { type: Boolean, default: false },
         user: { type: Schema.Types.ObjectId, ref: 'users', required: true },
         productModel: { type: String, enum: ["properties", "cars", "boats", "motorcycles", "jobs", "others"], required: true },
-        otherDetails: { type: Schema.Types.ObjectId, refPath: 'productModel', required: true },
+        // otherDetails: { type: Schema.Types.ObjectId, refPath: 'productModel', required: true },
     },
-    { timestamps: true },
+    { discriminatorKey: 'productModel', timestamps: true },
 );
 
 export const Products = model<IProduct, productModel>('products', ProductSchema);

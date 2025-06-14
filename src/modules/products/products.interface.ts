@@ -8,7 +8,7 @@ export interface IProduct {
     images: string[],
     brand: string,
     price: number,
-    discounted_price: number,
+    sellingPrice: number,
     stock: number,
     details: string,
     lat: number,
@@ -16,5 +16,5 @@ export interface IProduct {
     isBoosted: boolean,
     isDeleted: boolean,
     user : ObjectId,
-    otherDetails?: ObjectId,
+    // otherDetails?: ObjectId,
 }

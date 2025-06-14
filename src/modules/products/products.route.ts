@@ -4,50 +4,17 @@ import auth from "../../middleware/auth";
 import { USER_ROLE } from "../user/user.constants";
 import multer from "multer";
 import path from 'node:path';
-import req_validator from "../../middleware/req_validation";
 import parseData from "../../middleware/parseData";
-import { addProductValidator } from "./products.validator";
+import { motorcycleRoutes } from "../(category_modules)/motorcycle/motorcycle.route";
+import { boatRoutes } from "../(category_modules)/boat/boat.route";
+import { jobRoutes, multiple_image_Upload } from "../(category_modules)/job/job.route";
+import { otherProductRoutes } from "../(category_modules)/others/others.route";
 
 const router = Router();
-
-export const file_upload_config = multer.diskStorage({
-    destination: function (req, file, cb) {
-        cb(null, path.join('public', 'images'));
-    },
-    filename: function (req, file, cb) {
-        //original name helps us to get the file extension
-        cb(null, Date.now() + "-" + file.originalname);
-    },
-});
-
-const multiple_image_Upload = multer({
-    storage: file_upload_config,
-    limits: { fileSize: 1024 * 1024 * 5 /* 5 mb */ },
-    fileFilter(req, file, cb) {
-        // if file type valid
-        if (['image/png', 'image/jpeg', 'image/jpg', 'image/webp'].includes(file.mimetype)) {
-            cb(null, true)
-        }
-        else {
-            cb(null, false);
-            return cb(new Error('file type is not allowed'))
-        }
-    },
-}).array('images');
 
 router.get('/', productControler.allProducts);
 
 router.get('/:id', productControler.singleProduct);
-
-router.post(
-    '/',
-    auth(USER_ROLE.admin),
-    multiple_image_Upload,
-    addProductValidator,
-    req_validator(),
-    parseData(),
-    productControler.addProduct,
-);
 
 router.patch(
     '/:id',
@@ -62,6 +29,28 @@ router.delete(
     auth(USER_ROLE.admin),
     productControler.deleteProduct
 );
+
+
+const moduleRoutes = [
+    {
+        path: '/motorcycle',
+        route: motorcycleRoutes,
+    },
+    {
+        path: '/boat',
+        route: boatRoutes,
+    },
+    {
+        path: '/job',
+        route: jobRoutes,
+    },
+    {
+        path: '/other',
+        route: otherProductRoutes,
+    },
+];
+
+moduleRoutes.forEach(route => router.use(route.path, route.route));
 
 
 export const productRoutes = router;
