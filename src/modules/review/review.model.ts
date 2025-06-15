@@ -13,6 +13,8 @@ const ReviewSchema: Schema<IReview> = new Schema(
         reviewer: { type: Schema.Types.ObjectId, ref: 'users', required: true },
         comment: { type: String, required: true },
         rating: { type: Number, required: true },
+        isDeleted: { type: Boolean, required: true, default : false },
+        isEdited: { type: Boolean, required: true, default : false },
     },
     { timestamps: true },
 );

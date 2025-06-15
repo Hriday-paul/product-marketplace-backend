@@ -20,7 +20,7 @@ export const file_upload_config = multer.diskStorage({
     },
 });
 
-const image_Upload = multer({
+export const image_Upload = multer({
     storage: file_upload_config,
     limits: { fileSize: 1024 * 1024 * 10 /* 10 mb */ },
     fileFilter(req, file, cb) {

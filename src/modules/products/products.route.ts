@@ -9,12 +9,18 @@ import { motorcycleRoutes } from "../(category_modules)/motorcycle/motorcycle.ro
 import { boatRoutes } from "../(category_modules)/boat/boat.route";
 import { jobRoutes, multiple_image_Upload } from "../(category_modules)/job/job.route";
 import { otherProductRoutes } from "../(category_modules)/others/others.route";
+import { productQueryChecker } from "./products.validator";
+import req_validator from "../../middleware/req_validation";
 
 const router = Router();
 
-router.get('/', productControler.allProducts);
+router.get('/', productQueryChecker, req_validator(), productControler.allProducts);
+
+router.get('/my-products', auth(USER_ROLE.user), productQueryChecker, req_validator(), productControler.myProducts);
+router.get('/near-me', auth(USER_ROLE.user), productControler.nearMeProducts);
 
 router.get('/:id', productControler.singleProduct);
+router.get('/related/:id', productControler.relatedProducts);
 
 router.patch(
     '/:id',
@@ -26,7 +32,7 @@ router.patch(
 
 router.delete(
     '/:id',
-    auth(USER_ROLE.admin),
+    auth(USER_ROLE.user),
     productControler.deleteProduct
 );
 

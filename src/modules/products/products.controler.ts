@@ -10,7 +10,38 @@ const allProducts = catchAsync(async (req, res) => {
     sendResponse(res, {
         statusCode: httpStatus.OK,
         success: true,
-        message: 'all products fetched successfully',
+        message: 'All products fetched successfully',
+        data: result,
+    });
+})
+
+const myProducts = catchAsync(async (req, res) => {
+    const query = req.query
+    const result = await productService.myProducts(query, req.user._id)
+    sendResponse(res, {
+        statusCode: httpStatus.OK,
+        success: true,
+        message: 'My products retrived successfully',
+        data: result,
+    });
+})
+
+const relatedProducts = catchAsync(async (req, res) => {
+    const result = await productService.relatedProducts(req.params.id)
+    sendResponse(res, {
+        statusCode: httpStatus.OK,
+        success: true,
+        message: 'Related products retrived successfully',
+        data: result,
+    });
+})
+
+const nearMeProducts = catchAsync(async (req, res) => {
+    const result = await productService.nearMeProducts(req.user._id)
+    sendResponse(res, {
+        statusCode: httpStatus.OK,
+        success: true,
+        message: 'Near me products retrived successfully',
         data: result,
     });
 })
@@ -25,24 +56,6 @@ const singleProduct = catchAsync(async (req, res) => {
     });
 })
 
-const addProduct = catchAsync(async (req, res) => {
-
-    const files = req.files as Express.Multer.File[];
-
-    const filePaths = files.map(file => {
-        return file?.filename && (config.BASE_URL + '/images/' + file.filename) || '';
-    });
-
-    const result = await productService.addProduct(req.body, filePaths)
-
-    sendResponse(res, {
-        statusCode: httpStatus.OK,
-        success: true,
-        message: 'product added successfully',
-        data: result,
-    });
-})
-
 const updateProduct = catchAsync(async (req, res) => {
 
     const files = req.files as Express.Multer.File[];
@@ -50,6 +63,8 @@ const updateProduct = catchAsync(async (req, res) => {
     const filePaths = files.map(file => {
         return file?.filename && (config.BASE_URL + '/images/' + file.filename) || '';
     });
+
+    
 
     const result = await productService.updateProduct(req.body, req.params.id, filePaths)
 
@@ -62,7 +77,7 @@ const updateProduct = catchAsync(async (req, res) => {
 });
 
 const deleteProduct = catchAsync(async (req, res) => {
-    const result = await productService.deleteProduct(req.params.id);
+    const result = await productService.deleteProduct(req.params.id, req.user._id);
     sendResponse(res, {
         statusCode: 200,
         success: true,
@@ -73,8 +88,10 @@ const deleteProduct = catchAsync(async (req, res) => {
 
 export const productControler = {
     allProducts,
-    addProduct,
+    myProducts,
+    nearMeProducts,
     updateProduct,
     deleteProduct,
+    relatedProducts,
     singleProduct
 }

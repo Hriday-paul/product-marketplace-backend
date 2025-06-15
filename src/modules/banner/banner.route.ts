@@ -1,0 +1,17 @@
+import { Router } from "express";
+import { bannerControler } from "./banner.controler";
+import auth from "../../middleware/auth";
+import { USER_ROLE } from "../user/user.constants";
+import { image_Upload } from "../user/user.rout";
+
+
+const router = Router();
+
+router.get("/", bannerControler.allBanners);
+router.delete("/:id", auth(USER_ROLE.user), bannerControler.deleteBanner);
+router.post("/",
+    auth(USER_ROLE.admin),
+    image_Upload.single('image'),
+    bannerControler.uploadBanner);
+
+export const bannerRouts = router;

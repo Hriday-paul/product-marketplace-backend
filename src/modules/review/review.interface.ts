@@ -5,5 +5,7 @@ export interface IReview {
     product_user: ObjectId,
     reviewer: ObjectId,
     rating: number,
-    comment: string
+    comment: string,
+    isDeleted : boolean,
+    isEdited : boolean
 }

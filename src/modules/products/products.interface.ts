@@ -11,8 +11,7 @@ export interface IProduct {
     sellingPrice: number,
     stock: number,
     details: string,
-    lat: number,
-    long: number,
+    location : {type : string, coordinates : number[]}
     isBoosted: boolean,
     isDeleted: boolean,
     user : ObjectId,

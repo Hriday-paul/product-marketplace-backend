@@ -30,6 +30,8 @@ const addJob = catchAsync(async (req, res) => {
     req.body.condition = "new"
     req.body.images = filePaths
 
+    req.body.location = { type: "Point", coordinates: [req.body.long, req.body.lat] }
+
     const result = await jobService.addJob(req.body)
 
     sendResponse(res, {

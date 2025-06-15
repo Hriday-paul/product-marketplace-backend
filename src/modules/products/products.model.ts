@@ -12,8 +12,19 @@ const ProductSchema: Schema<IProduct> = new Schema(
         sellingPrice: { type: Number, default: 0 },
         details: { type: String, required: true },
         stock: { type: Number, default: 0 },
-        lat: { type: Number, default: 0, required: true },
-        long: { type: Number, default: 0, required: true },
+        location: {
+            type: {
+                type: String,
+                enum: ['Point'],
+                required: true,
+                default: 'Point',
+            },
+            coordinates: {
+                type: [Number], // [longitude, latitude]
+                required: true,
+            },
+        },
+
         category: { type: String, enum: ["propertie", "car", "boat", "motorcycle", "bicycle", "job", "book", "furniture", "electronic", "cloth"], required: true },
         condition: { type: String, enum: ["new", "used"], required: true },
         isBoosted: { type: Boolean, default: false },

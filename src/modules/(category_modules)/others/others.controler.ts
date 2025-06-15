@@ -30,6 +30,8 @@ const addOtherProduct = catchAsync(async (req, res) => {
     // req.body.category = "boat"
     req.body.images = filePaths
 
+    req.body.location = { type: "Point", coordinates: [req.body.long, req.body.lat] }
+
     const result = await othersProductService.addOtherProduct(req.body)
 
     sendResponse(res, {

@@ -7,6 +7,8 @@ import { dashboardRouts } from './modules/dasboard/dashboard.rout';
 import { settingsRoutes } from './modules/settings/settings.rout';
 import { productRoutes } from './modules/products/products.route';
 import { paymentsRoutes } from './modules/payments/payments.route';
+import { reviewRoutes } from './modules/review/review.route';
+import { bannerRouts } from './modules/banner/banner.route';
 
 
 const router = express.Router();
@@ -31,6 +33,14 @@ const moduleRoutes = [
     {
         path: '/products',
         route: productRoutes,
+    },
+    {
+        path: '/reviews',
+        route: reviewRoutes,
+    },
+    {
+        path: '/banners',
+        route: bannerRouts,
     },
     {
         path: '/setting',

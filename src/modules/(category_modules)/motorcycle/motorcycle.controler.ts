@@ -29,6 +29,8 @@ const addMotorcycle = catchAsync(async (req, res) => {
     req.body.productModel = "motorcycles"
     req.body.category = "motorcycle"
 
+    req.body.location = { type: "Point", coordinates: [req.body.long, req.body.lat] }
+
     const result = await motorcycleService.addMotorcycle(req.body)
 
     sendResponse(res, {
