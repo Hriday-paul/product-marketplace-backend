@@ -3,8 +3,8 @@ import catchAsync from "../../../utils/catchAsync";
 import sendResponse from "../../../utils/sendResponse";
 import httpStatus from 'http-status';
 import { motorcycleService } from "./motorcycle.service";
-import { productService } from "../../products/products.service";
 import AppError from "../../../error/AppError";
+import { productService } from "../../products/products.service";
 
 const addMotorcycle = catchAsync(async (req, res) => {
 
@@ -31,7 +31,10 @@ const addMotorcycle = catchAsync(async (req, res) => {
 
     req.body.location = { type: "Point", coordinates: [req.body.long, req.body.lat] }
 
-    const result = await motorcycleService.addMotorcycle(req.body)
+    const result = await motorcycleService.addMotorcycle(req.body);
+
+    // ------------send notification----------------
+    await productService.sendNotificationAfterAddProduct(req.user._id)
 
     sendResponse(res, {
         statusCode: httpStatus.OK,

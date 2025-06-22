@@ -3,11 +3,11 @@ import auth from "../../middleware/auth";
 import { USER_ROLE } from "../user/user.constants";
 import req_validator from "../../middleware/req_validation";
 import { settingsControler } from "./settings.controler";
-import { updateSettingsValidator } from "./settings.validator";
+import { SettingsValidator, updateSettingsValidator } from "./settings.validator";
 
 const router = Router();
 
-router.get('/:key', settingsControler.singleSettingItem);
+router.get('/:key', SettingsValidator, req_validator(), settingsControler.singleSettingItem);
 
 router.patch(
     '/',

@@ -9,6 +9,8 @@ import { productRoutes } from './modules/products/products.route';
 import { paymentsRoutes } from './modules/payments/payments.route';
 import { reviewRoutes } from './modules/review/review.route';
 import { bannerRouts } from './modules/banner/banner.route';
+import { ReelsRouts } from './modules/stories/stories.rout';
+import { notificationRoute } from './modules/notification/notification.routes';
 
 
 const router = express.Router();
@@ -41,6 +43,14 @@ const moduleRoutes = [
     {
         path: '/banners',
         route: bannerRouts,
+    },
+    {
+        path: '/reels',
+        route: ReelsRouts,
+    },
+    {
+        path: '/notifications',
+        route: notificationRoute,
     },
     {
         path: '/setting',

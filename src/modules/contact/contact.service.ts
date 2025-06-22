@@ -18,12 +18,12 @@ const createContact = async (payload: Icontact) => {
   // If 'isApproved' is set to true, send an email
   await sendEmail(
     config.nodemailer_host_email!,
-    'Got a support message from FETCH QUERIS',
+    'Got a support message from Marketplace app.',
     fs
       .readFileSync(emailPath, 'utf8')
-      .replace('{{name}}', payload?.fullname)
+      .replace('{{name}}', payload?.firstName + " " + payload?.lastName)
       .replace('{{email}}', payload?.email)
-      .replace('{{subject}}', payload?.subject)
+      .replace('{{contact}}', payload?.contact)
       .replace('{{details}}', payload?.description)
   );
 

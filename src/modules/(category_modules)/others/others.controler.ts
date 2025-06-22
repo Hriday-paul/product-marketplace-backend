@@ -32,7 +32,10 @@ const addOtherProduct = catchAsync(async (req, res) => {
 
     req.body.location = { type: "Point", coordinates: [req.body.long, req.body.lat] }
 
-    const result = await othersProductService.addOtherProduct(req.body)
+    const result = await othersProductService.addOtherProduct(req.body);
+
+    // ------------send notification----------------
+    await productService.sendNotificationAfterAddProduct(req.user._id);
 
     sendResponse(res, {
         statusCode: httpStatus.OK,

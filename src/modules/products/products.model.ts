@@ -1,7 +1,6 @@
 import { model, Model, Schema } from 'mongoose';
 import { IProduct } from './products.interface';
 
-
 export interface productModel extends Model<IProduct> { }
 
 const ProductSchema: Schema<IProduct> = new Schema(
@@ -24,13 +23,12 @@ const ProductSchema: Schema<IProduct> = new Schema(
                 required: true,
             },
         },
-
         category: { type: String, enum: ["propertie", "car", "boat", "motorcycle", "bicycle", "job", "book", "furniture", "electronic", "cloth"], required: true },
-        condition: { type: String, enum: ["new", "used"], required: true },
+        condition: { type: String, enum: ["new", "used"], required: true, default : 'used' },
         isBoosted: { type: Boolean, default: false },
         isDeleted: { type: Boolean, default: false },
         user: { type: Schema.Types.ObjectId, ref: 'users', required: true },
-        productModel: { type: String, enum: ["properties", "cars", "boats", "motorcycles", "jobs", "others"], required: true },
+        productModel: { type: String, enum: ["properties_sell", "properties_rent", "cars", "boats", "motorcycles", "jobs", "others"], required: true },
         // otherDetails: { type: Schema.Types.ObjectId, refPath: 'productModel', required: true },
     },
     { discriminatorKey: 'productModel', timestamps: true },

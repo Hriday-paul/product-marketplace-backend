@@ -11,6 +11,8 @@ import jwt, { JwtPayload, Secret } from 'jsonwebtoken';
 import { generateOtp } from "../../utils/otpGenerator"
 import moment from "moment"
 import { sendEmail } from "../../utils/mailSender"
+import { sendAdminNotifications } from "../notification/notification.send.admin"
+import { sendNotification } from "../notification/notification.utils"
 
 
 const createUser = async (payload: IUser) => {
@@ -39,7 +41,7 @@ const createUser = async (payload: IUser) => {
 };
 
 // Login
-const loginUser = async (payload: { email: string, password: string }) => {
+const loginUser = async (payload: { email: string, password: string, fcmToken?: string }) => {
 
     const user: IUser | null = await User.findOne({ email: payload?.email, role: { $nin: ['admin'] } });
 
@@ -47,7 +49,7 @@ const loginUser = async (payload: { email: string, password: string }) => {
         // If user not found, throw error
         throw new AppError(httpStatus.NOT_FOUND, 'Account not found');
     }
-    
+
     else {
         if (!user?.status) {
             throw new AppError(httpStatus.FORBIDDEN, 'Your account is blocked');
@@ -67,6 +69,38 @@ const loginUser = async (payload: { email: string, password: string }) => {
         if (!passwordMatched) {
             throw new AppError(httpStatus.BAD_REQUEST, 'Please check your credentials and try again');
         }
+
+
+        // Update FCM token if provided
+        let updatedUser = user;
+        if (payload.fcmToken) {
+            updatedUser = await User.findOneAndUpdate(
+                { email: payload.email },
+                { fcmToken: payload.fcmToken },
+                { new: true }
+            ) as IUser;
+        }
+
+        // Choose the most up-to-date FCM token to use
+        const tokenToUse = payload.fcmToken || user?.fcmToken;
+
+        // Send notification if FCM token exists and user notification is unabled
+        if (tokenToUse && user.notification) {
+            sendNotification([tokenToUse], {
+                title: `Login successfully`,
+                message: `New user login to your account`,
+                receiver: updatedUser._id,
+                receiverEmail: payload.email,
+                receiverRole: updatedUser.role,
+                sender: updatedUser._id
+            });
+        }
+
+        sendAdminNotifications({
+            sender: user._id,
+            message: `${user.first_name} log in successful! And the email is ${payload.email}`,
+            title: `New user login to his account`,
+        });
 
     }
 

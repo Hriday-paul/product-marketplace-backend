@@ -31,7 +31,10 @@ const addBoat = catchAsync(async (req, res) => {
 
     req.body.location = { type: "Point", coordinates: [req.body.long, req.body.lat] }
 
-    const result = await boatService.addBoat(req.body)
+    const result = await boatService.addBoat(req.body, req.user._id);
+
+    // ------------send notification----------------
+    await productService.sendNotificationAfterAddProduct(req.user._id)
 
     sendResponse(res, {
         statusCode: httpStatus.OK,

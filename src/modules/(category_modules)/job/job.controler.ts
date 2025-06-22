@@ -2,9 +2,9 @@ import config from "../../../config";
 import catchAsync from "../../../utils/catchAsync";
 import sendResponse from "../../../utils/sendResponse";
 import httpStatus from 'http-status';
-import { productService } from "../../products/products.service";
 import AppError from "../../../error/AppError";
 import { jobService } from "./job.service";
+import { productService } from "../../products/products.service";
 
 const addJob = catchAsync(async (req, res) => {
 
@@ -33,6 +33,9 @@ const addJob = catchAsync(async (req, res) => {
     req.body.location = { type: "Point", coordinates: [req.body.long, req.body.lat] }
 
     const result = await jobService.addJob(req.body)
+
+    // ------------send notification----------------
+    await productService.sendNotificationAfterAddProduct(req.user._id)
 
     sendResponse(res, {
         statusCode: httpStatus.OK,

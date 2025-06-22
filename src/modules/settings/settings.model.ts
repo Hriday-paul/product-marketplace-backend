@@ -8,7 +8,7 @@ const SettingsSchema: Schema<ISettings> = new Schema(
         key: {
             type: String,
             required: true,
-            enum: ["terms", "privacy"],
+            enum: ["terms", "privacy", "about"],
         },
         value: { type: String, required: true },
     },

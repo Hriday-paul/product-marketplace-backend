@@ -1,4 +1,3 @@
-import { NextFunction, Request, Response } from "express";
 import { body, check, param } from "express-validator";
 
 export const statusUpdateValidator = [

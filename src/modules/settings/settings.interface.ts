@@ -1,4 +1,4 @@
 export interface ISettings {
-    key : "terms" | "privacy",
+    key : "terms" | "privacy" | "about",
     value : string
 }

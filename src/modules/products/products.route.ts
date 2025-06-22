@@ -2,8 +2,6 @@ import { Router } from "express";
 import { productControler } from "./products.controler";
 import auth from "../../middleware/auth";
 import { USER_ROLE } from "../user/user.constants";
-import multer from "multer";
-import path from 'node:path';
 import parseData from "../../middleware/parseData";
 import { motorcycleRoutes } from "../(category_modules)/motorcycle/motorcycle.route";
 import { boatRoutes } from "../(category_modules)/boat/boat.route";
@@ -11,6 +9,7 @@ import { jobRoutes, multiple_image_Upload } from "../(category_modules)/job/job.
 import { otherProductRoutes } from "../(category_modules)/others/others.route";
 import { productQueryChecker } from "./products.validator";
 import req_validator from "../../middleware/req_validation";
+import { propertySellRoutes } from "../(category_modules)/property/property.rout";
 
 const router = Router();
 
@@ -24,7 +23,7 @@ router.get('/related/:id', productControler.relatedProducts);
 
 router.patch(
     '/:id',
-    auth(USER_ROLE.admin),
+    auth(USER_ROLE.user),
     multiple_image_Upload,
     parseData(),
     productControler.updateProduct,
@@ -53,6 +52,10 @@ const moduleRoutes = [
     {
         path: '/other',
         route: otherProductRoutes,
+    },
+    {
+        path: '/property',
+        route: propertySellRoutes,
     },
 ];
 

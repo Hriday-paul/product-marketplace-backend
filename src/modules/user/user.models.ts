@@ -106,6 +106,19 @@ const userSchema: Schema<IUser> = new Schema(
       type: Boolean,
       default: false,
     },
+    isOnline: {
+      type: Boolean,
+      default: false,
+    },
+    fcmToken: {
+      type: String,
+      required: false,
+    },
+    notification: {
+      type: Boolean,
+      required: true,
+      default: true
+    },
     verification: {
       otp: {
         type: Schema.Types.Mixed,

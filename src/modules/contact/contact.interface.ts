@@ -1,8 +1,9 @@
 import mongoose, { ObjectId } from 'mongoose';
 
 export interface Icontact {
-  fullname: string;
+  firstName: string;
+  lastName: string;
   email: string;
-  subject : string
+  contact : string;
   description: string;
 }

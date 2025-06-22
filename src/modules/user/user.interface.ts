@@ -1,8 +1,8 @@
-import { Types } from 'mongoose';
+import { ObjectId, Types } from 'mongoose';
 import { IstoreProfile } from './user.models';
 
 export interface IUser {
-  _id: Types.ObjectId;
+  _id: ObjectId;
   status: number; // 1 or 0
   first_name: string;
   last_name: string;
@@ -23,6 +23,10 @@ export interface IUser {
   bio: string,
   lat : number,
   long : number,
-  store_profile: IstoreProfile
+  store_profile: IstoreProfile,
+
+  isOnline: boolean;
+  fcmToken?: string;
+  notification : boolean
 }
 

@@ -1,9 +1,9 @@
 import { IBoat } from "./boat.interface";
 import { Boat } from "./boat.model";
 
-const addBoat = async (payload: IBoat) => {
+const addBoat = async (payload: IBoat, user : string) => {
 
-    const res = await Boat.create(payload)
+    const res = await Boat.create(payload);
 
     return res;
 }

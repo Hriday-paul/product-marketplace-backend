@@ -6,9 +6,10 @@ import httpStatus from 'http-status'
 
 // update user profile
 const updateProfile = async (payload: IUser, userId: string, image: string) => {
-    const { contact, first_name, last_name, address, bio, date_of_birth, lat, long } = payload
 
-    const updateFields: Partial<IUser> = { contact, first_name, last_name, address, bio, date_of_birth, lat, long };
+    const { contact, first_name, last_name, address, bio, date_of_birth, lat, long, notification } = payload
+
+    const updateFields: Partial<IUser> = { contact, first_name, last_name, address, bio, date_of_birth, lat, long, notification };
 
     if (image) updateFields.image = image;
 
@@ -31,7 +32,6 @@ const updateProfile = async (payload: IUser, userId: string, image: string) => {
 
     return result
 }
-
 
 // create store profile as a user
 const createStoreProfile = async (payload: IstoreProfile, userId: string, image: string, banner: string) => {
@@ -108,6 +108,12 @@ const status_update_user = async (payload: { status: boolean }, id: string) => {
     return result
 }
 
+const deletemyAccount = async (userId: string) => {
+
+    const res = await User.updateOne({ _id: userId }, { isDeleted: true });
+
+    return res;
+}
 
 export const userService = {
     updateProfile,
@@ -115,5 +121,6 @@ export const userService = {
     updateStoreProfile,
     getUserById,
     allUsers,
-    status_update_user
+    status_update_user,
+    deletemyAccount
 }

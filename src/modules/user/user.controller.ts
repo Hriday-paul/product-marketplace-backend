@@ -4,8 +4,7 @@ import { userService } from "./user.service";
 import { IUser } from "./user.interface";
 import sendResponse from "../../utils/sendResponse";
 import httpStatus from 'http-status'
-import { IstoreProfile, User } from "./user.models";
-import AppError from "../../error/AppError";
+import { IstoreProfile } from "./user.models";
 import config from "../../config";
 
 //get all users
@@ -41,9 +40,9 @@ const createStoreProfile = catchAsync(async (req: Request<{}, {}, IstoreProfile>
     const files = req.files as { [fieldname: string]: Express.Multer.File[] };
 
     let image, banner;
-    image = files?.image?.[0]?.filename && config.BASE_URL + '/images/' + files.image[0].filename
+    image = files?.image?.[0]?.filename && (config.BASE_URL + '/images/' + files.image[0].filename)
 
-    banner = files?.banner?.[0]?.filename && config.BASE_URL + '/images/' + files.banner[0].filename
+    banner = files?.banner?.[0]?.filename && (config.BASE_URL + '/images/' + files.banner[0].filename)
 
     const result = await userService.createStoreProfile(req.body, req.user._id, image || "", banner || "")
 
@@ -101,6 +100,19 @@ const update_user_status: RequestHandler<{ id: string }, {}, { status: boolean }
     });
 })
 
+// delete my accont
+const deletemyAccount: RequestHandler<{ id: string }, {}, { status: boolean }> = catchAsync(async (req, res) => {
+
+    const result = await userService.deletemyAccount(req.user._id);
+
+    sendResponse(res, {
+        statusCode: httpStatus.OK,
+        success: true,
+        message: 'Your account deleted successfully',
+        data: result,
+    });
+})
+
 
 export const userController = {
     updateProfile,
@@ -109,5 +121,5 @@ export const userController = {
     getMyProfile,
     update_user_status,
     all_users,
-
+    deletemyAccount
 }

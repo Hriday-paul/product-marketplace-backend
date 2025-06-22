@@ -24,16 +24,34 @@ export const image_Upload = multer({
     storage: file_upload_config,
     limits: { fileSize: 1024 * 1024 * 10 /* 10 mb */ },
     fileFilter(req, file, cb) {
-        // if file type valid
-        if (['image/png', 'image/jpeg', 'image/jpg', 'image/webp'].includes(file.mimetype)) {
-            cb(null, true)
-        }
-        else {
-            cb(null, false);
-            return cb(new Error('file type is not allowed'))
-        }
+        // const allowedTypes = ['image/png', 'image/jpeg', 'image/jpg', 'image/webp'];
+        // if (allowedTypes.includes(file.mimetype)) {
+        //     cb(null, true);
+        // } else {
+        //     cb(new Error('File type is not allowed'));
+        // }
+        cb(null, true);
     },
 });
+
+// export const multipleUpload = multer({
+//     storage: file_upload_config,
+//     limits: { fileSize: 1024 * 1024 * 10 /* 10 mb */ },
+//     fileFilter(req, file, cb) {
+//         const fieldAllowedTypes: Record<string, string[]> = {
+//             image: ['image/png', 'image/jpeg', 'image/jpg', 'image/webp'],
+//             banner: ['image/png', 'image/jpeg', 'image/jpg', 'image/webp']
+//         };
+
+//         const allowed = fieldAllowedTypes[file.fieldname];
+//         if (allowed && allowed.includes(file.mimetype)) {
+//             cb(null, true);
+//         } else {
+//             cb(new Error(`${file.fieldname} file type is not allowed`));
+//         }
+//     }
+
+// })
 
 
 router.get(
@@ -99,6 +117,12 @@ router.get(
     '/my-profile',
     auth(USER_ROLE.admin, USER_ROLE.user),
     userController.getMyProfile,
+);
+
+router.delete(
+    '/delete-account',
+    auth(USER_ROLE.user),
+    userController.deletemyAccount,
 );
 
 export const userRoutes = router;

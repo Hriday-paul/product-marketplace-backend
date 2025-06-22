@@ -2,7 +2,7 @@ import { ISettings } from "./settings.interface";
 import { Setting } from "./settings.model";
 
 const singleSettingItem = async (key: string) => {
-    const data = await Setting.findOne({ key })
+    const data = await Setting.findOne({ key }).select("key value")
     return data
 }
 
@@ -12,7 +12,6 @@ const updateSettingItem = async (payload: ISettings) => {
     const result = await Setting.updateOne({ key }, {value}, {upsert : true})
 
     return result
-
 }
 
 export const settingService = {

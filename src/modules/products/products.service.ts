@@ -1,4 +1,5 @@
 import AppError from "../../error/AppError";
+import { sendNotification } from "../notification/notification.utils";
 import { User } from "../user/user.models";
 import { IProduct } from "./products.interface";
 import { Products } from "./products.model";
@@ -55,7 +56,16 @@ const allProducts = async (query: Record<string, any>) => {
                 from: "reviews",
                 let: { productId: "$_id" },
                 pipeline: [
-                    { $match: { $expr: { $eq: ["$product", "$$productId"] } } },
+                    {
+                        $match: {
+                            $expr: {
+                                $and: [
+                                    { $eq: ["$product", "$$productId"] },
+                                    { $eq: ["$isDeleted", false] }
+                                ]
+                            }
+                        }
+                    },
                     {
                         $group: {
                             _id: null,
@@ -176,7 +186,16 @@ const myProducts = async (query: Record<string, any>, userId: string) => {
                 from: "reviews",
                 let: { productId: "$_id" },
                 pipeline: [
-                    { $match: { $expr: { $eq: ["$product", "$$productId"] } } },
+                    {
+                        $match: {
+                            $expr: {
+                                $and: [
+                                    { $eq: ["$product", "$$productId"] },
+                                    { $eq: ["$isDeleted", false] }
+                                ]
+                            }
+                        }
+                    },
                     {
                         $group: {
                             _id: null,
@@ -255,7 +274,16 @@ const singleProduct = async (productId: string) => {
                 from: "reviews",
                 let: { productId: "$_id" },
                 pipeline: [
-                    { $match: { $expr: { $eq: ["$product", "$$productId"] } } },
+                    {
+                        $match: {
+                            $expr: {
+                                $and: [
+                                    { $eq: ["$product", "$$productId"] },
+                                    { $eq: ["$isDeleted", false] }
+                                ]
+                            }
+                        }
+                    },
                     {
                         $group: {
                             _id: null,
@@ -326,7 +354,16 @@ const relatedProducts = async (productId: string) => {
                 from: "reviews",
                 let: { productId: "$_id" },
                 pipeline: [
-                    { $match: { $expr: { $eq: ["$product", "$$productId"] } } },
+                    {
+                        $match: {
+                            $expr: {
+                                $and: [
+                                    { $eq: ["$product", "$$productId"] },
+                                    { $eq: ["$isDeleted", false] }
+                                ]
+                            }
+                        }
+                    },
                     {
                         $group: {
                             _id: null,
@@ -388,7 +425,16 @@ const nearMeProducts = async (userId: string) => {
                 from: "reviews",
                 let: { productId: "$_id" },
                 pipeline: [
-                    { $match: { $expr: { $eq: ["$product", "$$productId"] } } },
+                    {
+                        $match: {
+                            $expr: {
+                                $and: [
+                                    { $eq: ["$product", "$$productId"] },
+                                    { $eq: ["$isDeleted", false] }
+                                ]
+                            }
+                        }
+                    },
                     {
                         $group: {
                             _id: null,
@@ -421,61 +467,70 @@ const nearMeProducts = async (userId: string) => {
 }
 
 interface upPRod extends IProduct {
-    existImages: string[]
+    existImages?: string[],
+    lat?: number;
+    long?: number;
 }
 
 const updateProduct = async (payload: upPRod, productId: string, newImages: string[]) => {
 
-    const { details, title, price, stock, existImages } = payload
-
-    const updateFields: Partial<IProduct> = { details, title, price, stock };
-
-
-    // Remove undefined or null fields to prevent overwriting existing values with null
-    Object.keys(updateFields).forEach((key) => {
-        if (updateFields[key as keyof IProduct] === undefined || updateFields[key as keyof IProduct] === '' || updateFields[key as keyof IProduct] === null) {
-            delete updateFields[key as keyof IProduct];
-        }
-    });
-
-    if (Object.keys(updateFields).length === 0) {
-        throw new AppError(
-            httpStatus.NOT_FOUND,
-            'No valid field found',
-        );
+    if (Object.keys(payload).length === 0) {
+        throw new AppError(httpStatus.BAD_REQUEST, 'No valid fields to update');
     }
 
-    const isExist = await Products.findById(productId)
-
+    const isExist = await Products.findById(productId);
     if (!isExist) {
+        throw new AppError(httpStatus.NOT_FOUND, 'Product not found');
+    }
+
+    // Build updated images array
+    const existingImages = payload.existImages || [];
+    payload.images = [...existingImages, ...newImages];
+
+    // Remove existImages from payload to avoid saving unknown fields
+    delete payload?.existImages;
+    delete payload?.isBoosted;
+    delete payload?.isDeleted;
+    delete payload?.user;
+
+
+    if (typeof payload.lat === 'number' || typeof payload.long === 'number') {
+
+        const [currentLong, currentLat] = isExist.location.coordinates;
+
+        const updatedLat = typeof payload.lat === 'number' ? payload.lat : currentLat;
+        const updatedLong = typeof payload.long === 'number' ? payload.long : currentLong;
+
+        payload.location = {
+            type: 'Point',
+            coordinates: [updatedLong, updatedLat],
+        };
+
+        // Remove lat & long from payload to avoid storing them directly
+        delete payload.lat;
+        delete payload.long;
+    }
+
+
+
+
+    // Update the product
+    const result = await Products.updateOne(
+        { _id: productId },
+        { $set: payload },
+        {runValidators: true}
+    );
+
+    if (result.modifiedCount <= 0) {
         throw new AppError(
-            httpStatus.NOT_FOUND,
-            'Product not found',
+            httpStatus.INTERNAL_SERVER_ERROR,
+            'Product update failed, try again'
         );
     }
 
-    const existImg = JSON.parse(existImages as unknown as string)
-
-    if (newImages) {
-        updateFields.images = [...existImg, ...newImages];
-    } else {
-        updateFields.images = [...existImg];
-    }
-
-
-    const result = await Products.updateOne({ _id: productId }, updateFields)
-
-    if (result?.modifiedCount <= 0) {
-        throw new AppError(
-            httpStatus.NOT_FOUND,
-            'Product update failed, try again',
-        );
-    }
-
-    return result
+    return result;
 
 }
-
 
 const deleteProduct = async (productId: string, userId: string) => {
 
@@ -489,7 +544,7 @@ const deleteProduct = async (productId: string, userId: string) => {
     }
 
     //check is owner
-    if (isExist?.user.toString() !== userId) {
+    if (isExist?.user?.toString() !== userId) {
         throw new AppError(
             httpStatus.FORBIDDEN,
             'You have not access to delete',
@@ -501,6 +556,34 @@ const deleteProduct = async (productId: string, userId: string) => {
     return res;
 };
 
+const sendNotificationAfterAddProduct = async (userId: string) => {
+
+    const user = await User.findById(userId);
+
+    if (!user) {
+        throw new AppError(
+            httpStatus.NOT_FOUND,
+            'User not found',
+        );
+    }
+
+    // get FCM token to use
+    const tokenToUse = user?.fcmToken;
+
+    // Send notification if FCM token exists and user notification is unabled
+    if (tokenToUse && user?.notification) {
+        sendNotification([tokenToUse], {
+            title: `Product added successfully`,
+            message: `New product added successfully`,
+            receiver: user._id,
+            receiverEmail: user.email,
+            receiverRole: user.role,
+            sender: user._id,
+            type: "product"
+        });
+    }
+}
+
 export const productService = {
     allProducts,
     myProducts,
@@ -508,5 +591,6 @@ export const productService = {
     nearMeProducts,
     updateProduct,
     deleteProduct,
-    singleProduct
+    singleProduct,
+    sendNotificationAfterAddProduct
 }

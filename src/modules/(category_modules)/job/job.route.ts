@@ -22,16 +22,17 @@ export const file_upload_config = multer.diskStorage({
 
 export const multiple_image_Upload = multer({
     storage: file_upload_config,
-    limits: { fileSize: 1024 * 1024 * 5 /* 5 mb */ },
+    limits: { fileSize: 1024 * 1024 * 50 /* 50 mb */ },
     fileFilter(req, file, cb) {
         // if file type valid
-        if (['image/png', 'image/jpeg', 'image/jpg', 'image/webp'].includes(file.mimetype)) {
-            cb(null, true)
-        }
-        else {
-            cb(null, false);
-            return cb(new Error('file type is not allowed'))
-        }
+        // if (['image/png', 'image/jpeg', 'image/jpg', 'image/webp'].includes(file.mimetype)) {
+        //     cb(null, true)
+        // }
+        // else {
+        //     cb(null, false);
+        //     return cb(new Error('file type is not allowed'))
+        // }
+        cb(null, true)
     },
 }).array('images');
 

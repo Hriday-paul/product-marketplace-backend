@@ -5,9 +5,10 @@ export interface contactModel extends Model<Icontact> { }
 
 const ContactSchema: Schema<Icontact> = new Schema(
   {
-    fullname: { type: String, required: true },
+    firstName: { type: String, required: true },
+    lastName: { type: String, required: false },
     email: { type: String, required: true },
-    subject: { type: String },
+    contact: { type: String, required: true },
     description: { type: String, required: true },
   },
   { timestamps: true },
