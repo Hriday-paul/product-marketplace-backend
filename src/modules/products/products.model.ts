@@ -9,7 +9,7 @@ const ProductSchema: Schema<IProduct> = new Schema(
         images: { type: [String], required: true },
         price: { type: Number, default: 0 },
         sellingPrice: { type: Number, default: 0 },
-        details: { type: String, required: true },
+        details: { type: String },
         stock: { type: Number, default: 0 },
         location: {
             type: {
@@ -23,12 +23,12 @@ const ProductSchema: Schema<IProduct> = new Schema(
                 required: true,
             },
         },
-        category: { type: String, enum: ["propertie", "car", "boat", "motorcycle", "bicycle", "job", "book", "furniture", "electronic", "cloth"], required: true },
+        category: { type: String, enum: ["propertie", "car", "boat", "motorcycle", "bicycle", "job", "book", "furniture", "electronic", "cloth", "caravan", "bobil"], required: true },
         condition: { type: String, enum: ["new", "used"], required: true, default : 'used' },
         isBoosted: { type: Boolean, default: false },
         isDeleted: { type: Boolean, default: false },
         user: { type: Schema.Types.ObjectId, ref: 'users', required: true },
-        productModel: { type: String, enum: ["properties_sell", "properties_rent", "cars", "boats", "motorcycles", "jobs", "others"], required: true },
+        productModel: { type: String, enum: ["properties_sell", "properties_rent", "cars", "boats", "motorcycles", "jobs", "others", "caravans", "bobils"], required: true },
         // otherDetails: { type: Schema.Types.ObjectId, refPath: 'productModel', required: true },
     },
     { discriminatorKey: 'productModel', timestamps: true },

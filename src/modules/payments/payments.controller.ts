@@ -5,15 +5,27 @@ import sendResponse from '../../utils/sendResponse';
 import httpStatus from 'http-status';
 import config from '../../config';
 
+
+const checkout = catchAsync(async (req: Request, res: Response) => {
+  const result = await paymentsService.checkout(req.body?.package, req.user._id);
+  sendResponse(res, {
+    success: true,
+    statusCode: httpStatus.OK,
+    data: result,
+    message: 'payment link get successful',
+  });
+});
+
+
 const confirmPayment = catchAsync(async (req: Request, res: Response) => {
   const result = await paymentsService.confirmPayment(req?.query);
-  res.redirect(`${config.client_Url}${config.success_url}?orderId=${result?.order}&paymentId=${result?._id}`);
-  // sendResponse(res, {
-  //   success: true,
-  //   statusCode: httpStatus.OK,
-  //   data: result,
-  //   message: 'payment successful',
-  // });
+  // res.redirect(`${config.client_Url}${config.success_url}&paymentId=${result?._id}`);
+  sendResponse(res, {
+    success: true,
+    statusCode: httpStatus.OK,
+    data: result,
+    message: 'payment successful',
+  });
 });
 
 const getPaymentsByUserId = catchAsync(async (req: Request, res: Response) => {
@@ -102,6 +114,7 @@ const updatePayments = catchAsync(async (req: Request, res: Response) => {
     message: 'Payment updated successfully',
   });
 });
+
 const deletePayments = catchAsync(async (req: Request, res: Response) => {
   const { id } = req.params;
   const result = await paymentsService.deletePayments(id);
@@ -129,4 +142,5 @@ export const paymentsController = {
   confirmPayment,
   getPaymentsByUserId,
   getPaymentsByUserIdWithParams,
+  checkout
 };

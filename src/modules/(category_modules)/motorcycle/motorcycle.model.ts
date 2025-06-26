@@ -30,6 +30,8 @@ const MotorCycleSchema: Schema<IMotorcycle> = new Schema(
       
         reRegistrationFeeInNOK: { type: Number, required : false, default : 0 },
         exemptFromReRegistrationFee: { type: Boolean, required: false, default : false },
+
+         sellingPriceNOK : {type : Number, required : true, default : 0},
         
         phoneNumber: { type: String, required: false },
         address: { type: String, required: true } // required

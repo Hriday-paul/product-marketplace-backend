@@ -11,6 +11,7 @@ import { reviewRoutes } from './modules/review/review.route';
 import { bannerRouts } from './modules/banner/banner.route';
 import { ReelsRouts } from './modules/stories/stories.rout';
 import { notificationRoute } from './modules/notification/notification.routes';
+import { packageRouts } from './modules/package/package.rout';
 
 
 const router = express.Router();
@@ -56,10 +57,14 @@ const moduleRoutes = [
         path: '/setting',
         route: settingsRoutes,
     },
-    // {
-    //     path: '/payments',
-    //     route: paymentsRoutes,
-    // }
+    {
+        path: '/packages',
+        route: packageRouts,
+    },
+    {
+        path: '/payments',
+        route: paymentsRoutes,
+    }
 ];
 
 moduleRoutes.forEach(route => router.use(route.path, route.route));

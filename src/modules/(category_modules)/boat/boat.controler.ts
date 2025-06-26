@@ -5,6 +5,7 @@ import httpStatus from 'http-status';
 import { productService } from "../../products/products.service";
 import AppError from "../../../error/AppError";
 import { boatService } from "./boat.service";
+import { access_productService } from "../../access_product/access_products.service";
 
 const addBoat = catchAsync(async (req, res) => {
 
@@ -31,6 +32,10 @@ const addBoat = catchAsync(async (req, res) => {
 
     req.body.location = { type: "Point", coordinates: [req.body.long, req.body.lat] }
 
+    // ---------------check access to add product-----------
+    // await access_productService.checkAccess(req.user._id)
+
+    //-----------------------add product--------------
     const result = await boatService.addBoat(req.body, req.user._id);
 
     // ------------send notification----------------

@@ -8,54 +8,60 @@ import { createCheckoutSession } from './payments.utils';
 import { startSession, Types } from 'mongoose';
 import { User } from '../user/user.models';
 import { IUser } from '../user/user.interface';
-import { IOrder } from '../order/order.interface';
-import Order from '../order/order.model';
+import generateRandomString from '../../utils/generateRandomString';
+import { IPackage } from '../package/package.interface';
+import Package from '../package/package.model';
+import Access_Products from '../access_product/access_products.model';
 
 
 const stripe = new Stripe(config.stripe?.stripe_api_secret as string, {
-  apiVersion: "2025-03-31.basil",
+  apiVersion: "2025-03-31.basil", // Valid API version
   typescript: true,
 });
 
-interface IIorder extends IOrder {
-  _id: Types.ObjectId;
-}
-
 //-----------------create acheck out url---------------------
-const checkout = async (payload: IIorder, userId: string, product_names: string) => {
+const checkout = async (packageId: string, userId: string) => {
+  const tranId = generateRandomString(10);
 
-  const order: IIorder | null = await Order.findById(
-    payload?._id,
+  const foundPackage: IPackage | null = await Package.findById(
+    packageId,
   )
 
-  if (!order) {
-    throw new AppError(httpStatus.NOT_FOUND, 'Order Not Found!');
+  if (!foundPackage) {
+    throw new AppError(httpStatus.NOT_FOUND, 'Boasting Package Not Found!');
   }
 
-  const createdPayment = await Payment.create({ user: userId, tranId: order?.tranId, total_amount: order?.total_amount, order: order?._id });
+  const startedAt = Date.now();
+  const expiredAt = Date.now() + foundPackage.duration_day * 24 * 60 * 60 * 1000
 
-
-  if (!createdPayment) {
-    throw new AppError(
-      httpStatus.INTERNAL_SERVER_ERROR,
-      'Failed to create payment',
-    );
+  interface INewPayment extends IPayment {
+    user: IUser // after population, user will be an object, not just an ID
   }
 
-  if (!createdPayment) throw new AppError(httpStatus.BAD_REQUEST, 'payment create failed');
+  const paymentData = await Payment.findOneAndUpdate(
+    {
+      isPaid: false,
+      user: userId,
+    },
+    { user: userId, tranId, total_amount: foundPackage?.price, product_limit: foundPackage?.product_limit, expiredAt, startedAt, package: foundPackage?._id, isPaid: false },
+    { new: true, upsert: true },
+  ).populate("user") as INewPayment;
+
+  if (!paymentData) throw new AppError(httpStatus.BAD_REQUEST, 'payment not found');
 
   const checkoutSession = await createCheckoutSession({
     // customerId: customer.id,
     product: {
-      amount: order?.total_amount,
+      amount: paymentData?.total_amount,
       //@ts-ignore
-      name: product_names,
+      name: foundPackage?.title,
       quantity: 1,
     },
 
+    user: paymentData?.user,
 
     //@ts-ignore
-    paymentId: createdPayment?._id,
+    paymentId: paymentData?._id,
   });
 
   return checkoutSession?.url;
@@ -64,6 +70,7 @@ const checkout = async (payload: IIorder, userId: string, product_names: string)
 
 
 const confirmPayment = async (query: Record<string, any>) => {
+
   const { sessionId, paymentId } = query;
   const session = await startSession();
   const PaymentSession = await stripe.checkout.sessions.retrieve(sessionId);
@@ -84,7 +91,7 @@ const confirmPayment = async (query: Record<string, any>) => {
       paymentId,
       { isPaid: true, paymentIntentId: paymentIntentId },
       { new: true, session },
-    ).populate('user') as unknown as { _id: string, order: string, tranId: string, total_amount: number, createdAt: Date, user: IUser };
+    ).populate('user')
 
     if (!payment) {
       throw new AppError(httpStatus.NOT_FOUND, 'Payment Not Found!');
@@ -97,23 +104,37 @@ const confirmPayment = async (query: Record<string, any>) => {
       throw new AppError(httpStatus.NOT_FOUND, 'User Not Found!');
     }
 
-    const order: IIorder | null = await Order.findById(
-      payment?.order,
-    ).session(session);
+    const existAccessProduct = await Access_Products.findOne({ user: user?._id });
 
-    if (!order) {
-      throw new AppError(httpStatus.NOT_FOUND, 'Order Not Found!');
+
+    let product_limit = 0
+    let new_expired
+    let added_product = 0
+    const currentDate = new Date();
+
+    if (existAccessProduct) {
+      const isNotExpired = new Date(existAccessProduct.expiredAt) >= currentDate;
+
+      product_limit = isNotExpired
+        ? existAccessProduct.product_limit + payment?.product_limit
+        : payment?.product_limit;
+
+      new_expired = isNotExpired
+        ? new Date(
+          new Date(existAccessProduct.expiredAt).getTime() +
+          (payment?.expiredAt ? new Date(payment.expiredAt).getTime() - currentDate.getTime() : 0)
+        )
+        : payment?.expiredAt ? new Date(payment.expiredAt) : currentDate;
+
+      added_product = isNotExpired ? existAccessProduct.added_product : 0;
+
+    } else {
+      product_limit = payment?.product_limit;
+      new_expired = payment?.expiredAt ? new Date(payment.expiredAt) : new Date();
+      added_product = 0;
     }
 
-    await Order.findByIdAndUpdate(
-      payment?.order,
-      {
-        isPaid: true,
-      },
-      {
-        session,
-      }
-    )
+    const access_product = await Access_Products.updateOne({ user: user._id }, { product_limit: product_limit, expiredAt: new_expired, last_purchase_package: payment?.package, user: user?._id, added_product }, { upsert: true, session });
 
     await session.commitTransaction();
     return payment;
@@ -205,9 +226,6 @@ const deletePayments = async (id: string) => {
   return deletedPayment;
 };
 
-const generateInvoice = async (payload: any) => {
-};
-
 export const paymentsService = {
   // createPayments,
   getAllPayments,
@@ -217,5 +235,4 @@ export const paymentsService = {
   checkout,
   confirmPayment,
   getPaymentsByUserId,
-  generateInvoice,
 };

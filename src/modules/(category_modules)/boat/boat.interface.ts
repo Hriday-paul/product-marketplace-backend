@@ -20,6 +20,8 @@ export interface IBoat {
   equipment: string;
   adHeadline: string;
   video?: string;
+
+
   
   phoneNumber: string;
   address: string;

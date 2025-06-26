@@ -3,7 +3,7 @@ import { body } from "express-validator";
 export const addMotorcycleValidator = [
   body('title').trim().not().isEmpty().withMessage('title is required').isString(),
   body('price').trim().escape().not().isEmpty().withMessage('Price is required').isNumeric().withMessage("Invalid Price type"),
-  body('sellingPrice').trim().escape().not().isEmpty().withMessage('sellingPrice is required').isNumeric().withMessage("Invalid Price type"),
+  body('sellingPriceNOK').trim().escape().not().isEmpty().withMessage('sellingPriceNOK is required').isNumeric().withMessage("Invalid sellingPriceNOK type"),
   body('stock').trim().escape().not().isEmpty().withMessage('stock is required').isNumeric().withMessage("Invalid Stock type"),
 
   // body('category').trim().not().isEmpty().withMessage('category is required').isString().isIn(["propertie", "car", "boat", "motorcycle", "bicycle", "job", "book", "furniture", "electronic", "cloth"]).withMessage("invalid category"),

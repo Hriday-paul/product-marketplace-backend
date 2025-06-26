@@ -7,6 +7,8 @@ import req_validator from '../../middleware/req_validation';
 
 const router = Router();
 
+router.post('/checkout', checkoutValidator, req_validator(), auth(USER_ROLE.user), paymentsController.checkout);
+
 router.get(
   '/userpayment',
   auth(USER_ROLE.admin),
@@ -18,8 +20,6 @@ router.get(
   auth(USER_ROLE.admin),
   paymentsController.getPaymentsByUserIdWithParams,
 );
-
-
 
 router.get('/confirm-payment', paymentsController.confirmPayment);
 

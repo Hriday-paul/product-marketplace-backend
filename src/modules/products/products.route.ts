@@ -10,6 +10,9 @@ import { otherProductRoutes } from "../(category_modules)/others/others.route";
 import { productQueryChecker } from "./products.validator";
 import req_validator from "../../middleware/req_validation";
 import { propertySellRoutes } from "../(category_modules)/property/property.rout";
+import { carRoutes } from "../(category_modules)/car/car.rout";
+import { CaravanRout } from "../(category_modules)/car/caravan.rout";
+import { BobilRout } from "../(category_modules)/car/bobil.rout";
 
 const router = Router();
 
@@ -56,6 +59,18 @@ const moduleRoutes = [
     {
         path: '/property',
         route: propertySellRoutes,
+    },
+    {
+        path: '/car',
+        route: carRoutes,
+    },
+    {
+        path: '/caravan',
+        route: CaravanRout,
+    },
+    {
+        path: '/bobil',
+        route: BobilRout,
     },
 ];
 

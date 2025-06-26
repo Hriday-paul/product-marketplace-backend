@@ -18,12 +18,12 @@ import { sendNotification } from "../notification/notification.utils"
 const createUser = async (payload: IUser) => {
     const { first_name, last_name, email, password = '', contact = '', address = '', bio = '', date_of_birth = '' } = payload
 
-    let isExist = await User.findOne({ email })
+    let isExist = await User.findOne({ email });
 
     //check user is exist or not
     if (isExist && isExist?.isverified) {
         throw new AppError(
-            httpStatus.FORBIDDEN,
+            httpStatus.CONFLICT,
             'User already exists with this email',
         );
     }

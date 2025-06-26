@@ -29,6 +29,7 @@ const BoatSchema: Schema<IBoat> = new Schema(
         video: { type: String },
         phoneNumber: { type: String, required: false },
         address: { type: String, required: false },
+       
 
     }
 );

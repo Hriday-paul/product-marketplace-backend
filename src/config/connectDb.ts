@@ -8,7 +8,9 @@ const connectDb = async () => {
         await mongoose.connect(config.database_url!, {
             dbName: 'abo_halab'
         });
+
         console.log(`DB Running On ${mongoose.connection.host}`);
+
     } catch (error) {
         process.exit(1);
     }

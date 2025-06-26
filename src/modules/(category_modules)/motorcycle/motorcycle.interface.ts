@@ -26,6 +26,8 @@ export interface IMotorcycle {
   reRegistrationFeeInNOK?: number;
   exemptFromReRegistrationFee: boolean;
 
+    sellingPriceNOK : number
+
   phoneNumber: string;
   address: string;
 }
