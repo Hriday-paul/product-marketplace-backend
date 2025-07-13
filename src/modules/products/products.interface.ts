@@ -15,5 +15,6 @@ export interface IProduct {
     isBoosted ?: boolean,
     isDeleted ?: boolean,
     user ?: ObjectId,
+    total_views : number
     // otherDetails?: ObjectId,
 }

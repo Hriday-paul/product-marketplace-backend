@@ -19,4 +19,6 @@ const ReviewSchema: Schema<IReview> = new Schema(
     { timestamps: true },
 );
 
+ReviewSchema.index({ product: 1, isDeleted: 1 });
+
 export const Reviews = model<IReview, reviewModel>('reviews', ReviewSchema);

@@ -24,14 +24,17 @@ const ProductSchema: Schema<IProduct> = new Schema(
             },
         },
         category: { type: String, enum: ["propertie", "car", "boat", "motorcycle", "bicycle", "job", "book", "furniture", "electronic", "cloth", "caravan", "bobil"], required: true },
-        condition: { type: String, enum: ["new", "used"], required: true, default : 'used' },
+        condition: { type: String, enum: ["new", "used"], required: true, default: 'used' },
         isBoosted: { type: Boolean, default: false },
         isDeleted: { type: Boolean, default: false },
         user: { type: Schema.Types.ObjectId, ref: 'users', required: true },
         productModel: { type: String, enum: ["properties_sell", "properties_rent", "cars", "boats", "motorcycles", "jobs", "others", "caravans", "bobils"], required: true },
+        total_views: { type: Number, default: 0 }
         // otherDetails: { type: Schema.Types.ObjectId, refPath: 'productModel', required: true },
     },
     { discriminatorKey: 'productModel', timestamps: true },
 );
+
+ProductSchema.index({ location: '2dsphere', isDeleted: 1 });
 
 export const Products = model<IProduct, productModel>('products', ProductSchema);

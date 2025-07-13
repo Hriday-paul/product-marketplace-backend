@@ -263,7 +263,17 @@ const myProducts = async (query: Record<string, any>, userId: string) => {
     return { data: products, meta }
 }
 
+const topViewsProduct = async () => {
+
+    const res = await Products.find({ isDeleted: false }).sort({ total_views: -1 }).limit(10).select('_id title images price sellingPrice details category condition');
+
+    return res;
+
+}
+
 const singleProduct = async (productId: string) => {
+
+    await Products.updateOne({ _id: productId }, { $inc: { total_views: 1 } });
 
     const product = await Products.aggregate([
         { $match: { _id: new ObjectId(productId), isDeleted: false } },
@@ -518,7 +528,7 @@ const updateProduct = async (payload: upPRod, productId: string, newImages: stri
     const result = await Products.updateOne(
         { _id: productId },
         { $set: payload },
-        {runValidators: true}
+        { runValidators: true }
     );
 
     if (result.modifiedCount <= 0) {
@@ -592,5 +602,6 @@ export const productService = {
     updateProduct,
     deleteProduct,
     singleProduct,
-    sendNotificationAfterAddProduct
+    sendNotificationAfterAddProduct,
+    topViewsProduct
 }

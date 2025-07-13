@@ -18,6 +18,8 @@ const router = Router();
 
 router.get('/', productQueryChecker, req_validator(), productControler.allProducts);
 
+router.get('/top-viewed', productQueryChecker, req_validator(), productControler.topViewsProduct);
+
 router.get('/my-products', auth(USER_ROLE.user), productQueryChecker, req_validator(), productControler.myProducts);
 router.get('/near-me', auth(USER_ROLE.user), productControler.nearMeProducts);
 

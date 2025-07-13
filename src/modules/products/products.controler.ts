@@ -26,6 +26,16 @@ const myProducts = catchAsync(async (req, res) => {
     });
 })
 
+const topViewsProduct = catchAsync(async (req, res) => {
+    const result = await productService.topViewsProduct()
+    sendResponse(res, {
+        statusCode: httpStatus.OK,
+        success: true,
+        message: 'Most viewd products',
+        data: result,
+    });
+})
+
 const relatedProducts = catchAsync(async (req, res) => {
     const result = await productService.relatedProducts(req.params.id)
     sendResponse(res, {
@@ -64,7 +74,7 @@ const updateProduct = catchAsync(async (req, res) => {
         return file?.filename && (config.BASE_URL + '/images/' + file.filename) || '';
     });
 
-    
+
 
     const result = await productService.updateProduct(req.body, req.params.id, filePaths)
 
@@ -93,5 +103,6 @@ export const productControler = {
     updateProduct,
     deleteProduct,
     relatedProducts,
-    singleProduct
+    singleProduct,
+    topViewsProduct
 }

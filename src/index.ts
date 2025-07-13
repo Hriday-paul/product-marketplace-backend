@@ -20,7 +20,8 @@ app.use(cors({
   origin: [config.client_Url!, "http://192.168.40.112:3000", "http://192.168.40.76:5173", "http://204.197.173.195:4175"],
   credentials: true
 }));
-app.use(express.json());
+app.use(express.json({ limit: '500mb' }));
+app.use(express.urlencoded({ limit: '500mb', extended: true }));
 app.use(cookieParser());
 app.use(express.static('public'));
 
@@ -39,6 +40,8 @@ app.use(notFound);
 app.use(globalErrorHandler);
 
 
-app.listen(port, () => {
-  console.log(`[server]: Server is running at ${config.ip + ":" + port}`);
-});
+// app.listen(port, () => {
+//   console.log(`[server]: Server is running at ${config.ip + ":" + port}`);
+// });
+
+export default app;
