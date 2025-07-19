@@ -65,15 +65,23 @@ const initializeSocketIO = (server: HttpServer) => {
       io.emit('onlineUser', Array.from(onlineUser));
 
       //----------------------user details and messages send for front end -->(as need to use)------------------------//
-      socket.on('message-page', async (userId, callback) => {
-        if (!userId) {
-          callbackFn(callback, {
-            success: false,
-            message: 'userId is required',
-          });
-        }
+      socket.on('message-page', async (data, callback) => {
 
         try {
+
+          const { userId } = data
+
+          if (!userId) {
+            callbackFn(callback, {
+              success: false,
+              message: 'userId is required',
+            });
+            io.emit('io-error', {
+              success: false,
+              message: 'userId id is required',
+            });
+          }
+
           const receiverDetails: IUser | null = await User.findById(
             userId,
           ).select('_id email role image');
@@ -90,6 +98,7 @@ const initializeSocketIO = (server: HttpServer) => {
           }
           const payload = {
             _id: receiverDetails?._id,
+            full_name: receiverDetails?.first_name + " " + receiverDetails?.last_name,
             email: receiverDetails?.email,
             image: receiverDetails?.image,
             role: receiverDetails?.role,
@@ -152,6 +161,7 @@ const initializeSocketIO = (server: HttpServer) => {
 
       //----------------------seen message-----------------------//
       socket.on('seen', async ({ chatId }, callback) => {
+
         if (!chatId) {
           callbackFn(callback, {
             success: false,
@@ -207,9 +217,6 @@ const initializeSocketIO = (server: HttpServer) => {
             user2.toString(),
           );
 
-          const user1Chat = 'chat-list::' + user1;
-
-          const user2Chat = 'chat-list::' + user2;
 
           const allUnReaddMessage = await Message.countDocuments({
             receiver: user1,
@@ -234,8 +241,12 @@ const initializeSocketIO = (server: HttpServer) => {
 
           socket.emit('message', getPreMessage || []);
 
+          const user1Chat = 'chat-list::' + user1;
+          const user2Chat = 'chat-list::' + user2;
+
           io.emit(user1Chat, ChatListUser1);
           io.emit(user2Chat, ChatListUser2);
+
         } catch (error: any) {
           callbackFn(callback, {
             success: false,
@@ -287,7 +298,7 @@ const initializeSocketIO = (server: HttpServer) => {
           payload.chat = alreadyExists?._id;
         }
 
-        console.log("==============chatId==============",payload.chat)
+        console.log("==============chatId==============", payload.chat);
 
         const result = await Message.create(payload);
 
@@ -344,14 +355,37 @@ const initializeSocketIO = (server: HttpServer) => {
       });
 
       //-----------------------Typing------------------------//
-      socket.on('typing', function (data) {
-        const chat = 'typing::' + data.chatId.toString();
-        const message = user?.name + ' is typing...';
+      socket.on('typing', function ({ chatId }, callback) {
+
+        if (!chatId) {
+          callbackFn(callback, {
+            success: false,
+            message: 'chatId id is required',
+          });
+          io.emit('io-error', {
+            success: false,
+            message: 'chatId id is required',
+          });
+        }
+
+        const chat = 'typing::' + chatId.toString();
+        const message = user?.first_name + ' is typing...';
         socket.emit(chat, { message: message });
       });
-      socket.on('stopTyping', function (data) {
-        const chat = 'stopTyping::' + data.chatId.toString();
-        const message = user?.name + ' is stop typing...';
+
+      socket.on('stopTyping', function ({ chatId }, callback) {
+        if (!chatId) {
+          callbackFn(callback, {
+            success: false,
+            message: 'chatId id is required',
+          });
+          io.emit('io-error', {
+            success: false,
+            message: 'chatId id is required',
+          });
+        }
+        const chat = 'stopTyping::' + chatId.toString();
+        const message = user?.first_name + ' is stop typing...';
         socket.emit(chat, { message: message });
       });
 

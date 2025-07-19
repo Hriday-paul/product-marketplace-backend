@@ -15,12 +15,28 @@ const allProducts = async (query: Record<string, any>) => {
     const category = query?.category || null;
     const condition = query?.condition || null;
 
+    const lat = query?.lat || null;
+    const long = query?.long || null;
+
     const filters: any = {
-        title: { $regex: search, $options: "i" }, // text search
+        title: { $regex: search, $options: "i" },
+        isDeleted: false,
     };
+
     if (category) filters.category = category;
     if (condition) filters.condition = condition;
-    filters.isDeleted = false;
+
+    if (lat && long) {
+        filters.location = {
+            $geoWithin: {
+                $centerSphere: [
+                    [parseFloat(long), parseFloat(lat)], // [lng, lat]
+                    10000 / 6378.1 // 10km / Earth's radius (km) = radians
+                ],
+            },
+        };
+    }
+
 
     const products = await Products.aggregate([
         // 1. Match by filters
