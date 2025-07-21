@@ -32,7 +32,7 @@ const allStories = async () => {
                 videoUrl: 1,
                 product: 1,
                 createdAt: 1,
-                user : 1,
+                user: 1,
                 totalLikes: {
                     $size: {
                         $filter: {
@@ -53,12 +53,33 @@ const allStories = async () => {
                 }
             }
         },
+        // {
+        //     $lookup: {
+        //         from: 'users',
+        //         localField: 'user',
+        //         foreignField: '_id',
+        //         as: 'user'
+        //     }
+        // },
         {
             $lookup: {
-                from: 'users',
-                localField: 'user',
-                foreignField: '_id',
-                as: 'user'
+                from: "users",
+                let: { userId: "$user" },
+                pipeline: [
+                    {
+                        $match: {
+                            $expr: { $eq: ["$_id", "$$userId"] }
+                        }
+                    },
+                    {
+                        $project: {
+                            password: 0,
+                            email: 0,
+                            fcmToken: 0
+                        }
+                    }
+                ],
+                as: "user"
             }
         },
         {

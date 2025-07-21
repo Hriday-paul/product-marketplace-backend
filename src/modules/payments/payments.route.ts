@@ -9,11 +9,13 @@ const router = Router();
 
 router.post('/checkout', checkoutValidator, req_validator(), auth(USER_ROLE.user), paymentsController.checkout);
 
-router.get(
-  '/userpayment',
-  auth(USER_ROLE.admin),
-  paymentsController.getPaymentsByUserId,
-);
+// router.get(
+//   '/userpayment',
+//   auth(USER_ROLE.admin),
+//   paymentsController.getPaymentsByUserId,
+// );
+
+router.get('/amount', auth(USER_ROLE.admin), paymentsController.paymentAmount);
 
 router.get(
   '/paymentbyuserId/:id',
@@ -34,5 +36,6 @@ router.get(
 );
 
 router.get('/', auth(USER_ROLE.admin), paymentsController.getAllPayments);
+
 
 export const paymentsRoutes = router;

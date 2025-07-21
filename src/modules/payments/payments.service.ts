@@ -12,6 +12,7 @@ import generateRandomString from '../../utils/generateRandomString';
 import { IPackage } from '../package/package.interface';
 import Package from '../package/package.model';
 import Access_Products from '../access_product/access_products.model';
+import QueryBuilder from '../../builder/QueryBuilder';
 
 
 const stripe = new Stripe(config.stripe?.stripe_api_secret as string, {
@@ -160,12 +161,16 @@ const confirmPayment = async (query: Record<string, any>) => {
 };
 
 
-const getAllPayments = async () => {
-  const payments = await Payment.find();
-  if (!payments || payments.length === 0) {
-    throw new AppError(httpStatus.NOT_FOUND, 'No payments found');
-  }
-  return payments;
+const getAllPayments = async (query: Record<string, any>) => {
+  const paymentModel = new QueryBuilder(Payment.find({ isPaid: true }).populate({ path: "user", select: "-password -fcmToken" }), query)
+    .search(['name', 'email', 'contact'])
+    .filter()
+    .paginate()
+    .sort();
+  const data: any = await paymentModel.modelQuery;
+  const meta = await paymentModel.countTotal();
+
+  return { data, meta }
 };
 
 const getPaymentsByUserId = async (
@@ -226,6 +231,54 @@ const deletePayments = async (id: string) => {
   return deletedPayment;
 };
 
+const paymentAmount = async () => {
+
+  const totalEarning = await Payment.aggregate([
+    {
+      $match: { isPaid: true }
+    },
+    {
+      $group: {
+        _id: null,
+        totalAmount: { $sum: "$total_amount" }
+      }
+    }
+  ]);
+
+  const totalAmount = totalEarning.length > 0 ? totalEarning[0].totalAmount : 0;
+
+
+
+  const startOfToday = new Date();
+  startOfToday.setHours(0, 0, 0, 0);
+
+  const endOfToday = new Date();
+  endOfToday.setHours(23, 59, 59, 999);
+
+  const todayEarning = await Payment.aggregate([
+    {
+      $match: {
+        isPaid: true,
+        createdAt: { $gte: startOfToday, $lte: endOfToday }
+      }
+    },
+    {
+      $group: {
+        _id: null,
+        totalAmount: { $sum: "$total_amount" }
+      }
+    }
+  ]);
+
+  const totalTodayEarning = todayEarning.length > 0 ? todayEarning[0].totalAmount : 0;
+
+  return {
+    totalEarning: totalAmount,
+    todayEarning: totalTodayEarning
+  }
+
+}
+
 export const paymentsService = {
   // createPayments,
   getAllPayments,
@@ -235,4 +288,5 @@ export const paymentsService = {
   checkout,
   confirmPayment,
   getPaymentsByUserId,
+  paymentAmount
 };

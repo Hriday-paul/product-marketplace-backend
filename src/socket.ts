@@ -160,20 +160,22 @@ const initializeSocketIO = (server: HttpServer) => {
       });
 
       //----------------------seen message-----------------------//
-      socket.on('seen', async ({ chatId }, callback) => {
-
-        if (!chatId) {
-          callbackFn(callback, {
-            success: false,
-            message: 'chatId id is required',
-          });
-          io.emit('io-error', {
-            success: false,
-            message: 'chatId id is required',
-          });
-        }
+      socket.on('seen', async (req_payload, callback) => {
 
         try {
+          const { chatId } = req_payload;
+
+          if (!chatId) {
+            callbackFn(callback, {
+              success: false,
+              message: 'chatId id is required',
+            });
+            io.emit('io-error', {
+              success: false,
+              message: 'chatId id is required',
+            });
+          }
+
           const chatList: IChat | null = await Chat.findById(chatId);
           if (!chatList) {
             callbackFn(callback, {
@@ -310,7 +312,7 @@ const initializeSocketIO = (server: HttpServer) => {
           });
         }
 
-        const senderMessage = 'new-message::' + result.chat.toString();
+        const senderMessage = 'new-message::' + payload.receiver.toString();
 
         io.emit(senderMessage, result);
 
@@ -355,38 +357,43 @@ const initializeSocketIO = (server: HttpServer) => {
       });
 
       //-----------------------Typing------------------------//
-      socket.on('typing', function ({ chatId }, callback) {
+      socket.on('typing', function (payload, callback) {
 
-        if (!chatId) {
+        try {
+
+          const { receiver } = payload
+
+          const chat = 'typing::' + receiver.toString();
+          const message = user?.first_name + ' is typing...';
+          socket.emit(chat, { message: message });
+
+        } catch (error: any) {
           callbackFn(callback, {
             success: false,
-            message: 'chatId id is required',
+            message: error.message,
           });
-          io.emit('io-error', {
-            success: false,
-            message: 'chatId id is required',
-          });
+          console.error('Error in seen event:', error);
+          // socket.emit('error', { message: error.message });
         }
 
-        const chat = 'typing::' + chatId.toString();
-        const message = user?.first_name + ' is typing...';
-        socket.emit(chat, { message: message });
       });
 
-      socket.on('stopTyping', function ({ chatId }, callback) {
-        if (!chatId) {
+      socket.on('stopTyping', function (payload, callback) {
+        try {
+          const { receiver } = payload;
+          
+          const chat = 'stopTyping::' + receiver.toString();
+          const message = user?.first_name + ' is stop typing...';
+          socket.emit(chat, { message: message });
+
+        } catch (error: any) {
           callbackFn(callback, {
             success: false,
-            message: 'chatId id is required',
+            message: error.message,
           });
-          io.emit('io-error', {
-            success: false,
-            message: 'chatId id is required',
-          });
+          console.error('Error in seen event:', error);
+          // socket.emit('error', { message: error.message });
         }
-        const chat = 'stopTyping::' + chatId.toString();
-        const message = user?.first_name + ' is stop typing...';
-        socket.emit(chat, { message: message });
       });
 
       //-----------------------Seen All------------------------//

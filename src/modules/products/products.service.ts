@@ -292,6 +292,7 @@ const singleProduct = async (productId: string) => {
     await Products.updateOne({ _id: productId }, { $inc: { total_views: 1 } });
 
     const product = await Products.aggregate([
+
         { $match: { _id: new ObjectId(productId), isDeleted: false } },
 
         // Lookup and aggregate review data
@@ -336,17 +337,30 @@ const singleProduct = async (productId: string) => {
 
         { $unset: "reviewStats" },
 
-        { $limit: 1 }, // ✅ only one document
+        { $limit: 1 },
 
         {
             $lookup: {
                 from: "users",
-                localField: "user",
-                foreignField: "_id",
-                as: "user",
-            },
+                let: { userId: "$user" },
+                pipeline: [
+                    {
+                        $match: {
+                            $expr: { $eq: ["$_id", "$$userId"] }
+                        }
+                    },
+                    {
+                        $project: {
+                            password: 0,
+                            email : 0,
+                            fcmToken : 0
+                        }
+                    }
+                ],
+                as: "user"
+            }
         },
-        { $unwind: { path: "$user", preserveNullAndEmptyArrays: true } },
+        { $unwind: { path: "$user", preserveNullAndEmptyArrays: true } }
     ]);
 
 

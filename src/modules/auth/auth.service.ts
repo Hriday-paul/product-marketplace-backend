@@ -104,6 +104,9 @@ const loginUser = async (payload: { email: string, password: string, fcmToken?: 
 
     }
 
+    const userDoc = (user as any).toObject();
+    delete userDoc.password;
+
     const jwtPayload: { userId: string; role: string } = {
         userId: user?._id?.toString() as string,
         role: user?.role,
@@ -122,7 +125,7 @@ const loginUser = async (payload: { email: string, password: string, fcmToken?: 
     );
 
     return {
-        user,
+        user : userDoc,
         accessToken,
         refreshToken,
     };
@@ -148,8 +151,11 @@ const adminLogin = async (payload: { email: string, password: string }) => {
         if (!passwordMatched) {
             throw new AppError(httpStatus.BAD_REQUEST, 'Please check your credentials and try again');
         }
-
     }
+
+    const userDoc = (user as any).toObject();
+    delete userDoc.password;
+
 
     const jwtPayload: { userId: string; role: string } = {
         userId: user?._id?.toString() as string,
@@ -169,7 +175,7 @@ const adminLogin = async (payload: { email: string, password: string }) => {
     );
 
     return {
-        user,
+        user : userDoc,
         accessToken,
         refreshToken,
     };

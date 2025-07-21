@@ -67,7 +67,7 @@ const getPaymentsByUserIdWithParams = catchAsync(async (req: Request, res: Respo
 });
 
 const getAllPayments = catchAsync(async (req: Request, res: Response) => {
-  const result = await paymentsService.getAllPayments(); // Assume this service method exists
+  const result = await paymentsService.getAllPayments(req.query); // Assume this service method exists
   sendResponse(res, {
     success: true,
     statusCode: httpStatus.OK,
@@ -134,6 +134,16 @@ const deletePayments = catchAsync(async (req: Request, res: Response) => {
   });
 });
 
+const paymentAmount = catchAsync(async (req: Request, res: Response) => {
+  const result = await paymentsService.paymentAmount(); // Assume this service method exists
+  sendResponse(res, {
+    success: true,
+    statusCode: httpStatus.OK,
+    data: result,
+    message: 'Payments amount retrieved successfully',
+  });
+});
+
 export const paymentsController = {
   getAllPayments,
   getPaymentsById,
@@ -142,5 +152,6 @@ export const paymentsController = {
   confirmPayment,
   getPaymentsByUserId,
   getPaymentsByUserIdWithParams,
-  checkout
+  checkout,
+  paymentAmount
 };

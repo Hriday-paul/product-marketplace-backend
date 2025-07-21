@@ -12,6 +12,7 @@ import { bannerRouts } from './modules/banner/banner.route';
 import { ReelsRouts } from './modules/stories/stories.rout';
 import { notificationRoute } from './modules/notification/notification.routes';
 import { packageRouts } from './modules/package/package.rout';
+import { favouriteRouts } from './modules/favourites/favourites.rout';
 
 
 const router = express.Router();
@@ -64,6 +65,10 @@ const moduleRoutes = [
     {
         path: '/payments',
         route: paymentsRoutes,
+    },
+    {
+        path: '/favourites',
+        route: favouriteRouts,
     }
 ];
 

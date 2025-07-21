@@ -1,8 +1,3 @@
-/* eslint-disable no-console */
-/* eslint-disable @typescript-eslint/no-unused-vars */
-/* eslint-disable no-unused-vars */
-/* eslint-disable @typescript-eslint/no-explicit-any */
-
 import admin from "firebase-admin";
 import httpStatus from "http-status";
 import AppError from "../../error/AppError";
@@ -16,15 +11,6 @@ if (!admin.apps.length) {
   });
 }
 
-/**
- * Sends push notifications to multiple devices using Firebase Cloud Messaging (FCM),
- * and logs the notification in the database for each token if successful.
- *
- * @param fcmToken - Array of device tokens to send the notification to
- * @param payload - The notification content including title, message, and metadata
- * @returns A Promise resolving to the Firebase messaging response or null on specific known errors
- */
-
 export const sendNotification = async (
   fcmToken: string[],
   payload: INotification
@@ -36,9 +22,19 @@ export const sendNotification = async (
         title: payload.title,
         body: payload.message,
       },
+      android: {
+        notification: {
+          icon: "http://10.10.10.9:3000/logo.png",
+          imageUrl: "http://10.10.10.9:3000/logo.png",
+          clickAction: 'notification'
+        }
+      },
       apns: {
         headers: {
           "apns-push-type": "alert",
+        },
+        fcmOptions: {
+          imageUrl: 'http://10.10.10.9:3000/logo.png'
         },
         payload: {
           aps: {
@@ -46,6 +42,11 @@ export const sendNotification = async (
             sound: "default",
           },
         },
+      },
+      webpush: {
+        headers: {
+          image: 'http://10.10.10.9:3000/logo.png'
+        }
       },
     });
 
@@ -80,11 +81,9 @@ export const sendNotification = async (
       });
     }
 
-    // Optional: Log successful response for debugging
-    // console.log("FCM send response:", response);
-
     return response;
   } catch (error: any) {
+
     // Handle specific Firebase third-party auth error
     if (error?.code === "messaging/third-party-auth-error") {
       console.warn("FCM auth error:", error.message);

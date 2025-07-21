@@ -40,6 +40,7 @@ const loginUser = catchAsync(async (req: Request<{}, {}, { email: string, passwo
 
 const adminLogin = catchAsync(async (req: Request<{}, {}, { email: string, password: string }>, res: Response) => {
     const result = await authService.adminLogin(req.body)
+    
     sendResponse(res, {
         statusCode: httpStatus.OK,
         success: true,
