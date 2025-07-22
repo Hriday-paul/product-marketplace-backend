@@ -1,10 +1,11 @@
 import moment from "moment";
 import { User } from "../user/user.models";
 import Payment from "../payments/payments.models";
+import { Products } from "../products/products.model";
 
 
 const userChart = async (query: Record<string, any>) => {
-    const userYear = query?.JoinYear ? query?.JoinYear : moment().year();
+    const userYear = query?.JoinYear ?? moment().year();
     const startOfUserYear = moment().year(userYear).startOf('year');
     const endOfUserYear = moment().year(userYear).endOf('year');
 
@@ -84,73 +85,24 @@ const earningChart = async (query: Record<string, any>) => {
 
 const countData = async () => {
     const totalUsers = await User.countDocuments({ status: 1 });
-    // const earnings = await Payment.aggregate([
-    //     {
-    //         $match: {
-    //             isPaid: true,
-    //         },
-    //     },
-    //     {
-    //         $facet: {
-    //             totalEarnings: [
-    //                 {
-    //                     $group: {
-    //                         _id: null,
-    //                         total: { $sum: '$amount' },
-    //                     },
-    //                 },
-    //             ],
-    //             allData: [
-    //                 {
-    //                     $lookup: {
-    //                         from: 'users',
-    //                         localField: 'user',
-    //                         foreignField: '_id',
-    //                         as: 'userDetails',
-    //                     },
-    //                 },
-    //                 {
-    //                     $lookup: {
-    //                         from: 'subscription',
-    //                         localField: 'subscription',
-    //                         foreignField: '_id',
-    //                         as: 'subscription',
-    //                     },
-    //                 },
-    //                 {
-    //                     $project: {
-    //                         user: { $arrayElemAt: ['$userDetails', 0] },
-    //                         subscription: { $arrayElemAt: ['$subscription', 0] },
-    //                         amount: 1,
-    //                         tranId: 1,
-    //                         status: 1,
-    //                         id: 1,
-    //                         createdAt: 1,
-    //                         updatedAt: 1,
-    //                     },
-    //                 },
-    //                 {
-    //                     $sort: { createdAt: -1 },
-    //                 },
-    //                 {
-    //                     $limit: 10,
-    //                 },
-    //             ],
-    //         },
-    //     },
-    // ]);
 
+    const totalEarning = await Payment.aggregate([
+        {
+            $match: { isPaid: true }
+        },
+        {
+            $group: {
+                _id: null,
+                totalAmount: { $sum: "$total_amount" }
+            }
+        }
+    ]);
 
+    const totalAmount = totalEarning.length > 0 ? totalEarning[0].totalAmount : 0;
 
-    // const totalEarnings =
-    //     (earnings?.length > 0 &&
-    //         earnings[0]?.totalEarnings?.length > 0 &&
-    //         earnings[0]?.totalEarnings[0]?.total) ||
-    //     0;
+    const totalProducts = await Products.countDocuments({isDeleted : false});
 
-    const totalEarnings = 0
-
-    return { totalEarnings: totalEarnings.toFixed(2), totalUsers: totalUsers.toFixed() }
+    return { totalEarnings: totalAmount.toFixed(2), totalUsers: totalUsers.toFixed(), totalProducts }
 }
 
 export const dashboardService = {

@@ -16,7 +16,29 @@ const create_Package = async (payload: IPackage) => {
 }
 
 const update_Package = async (payload: IPackage, id: string) => {
-    const packages = await Package.updateOne({ _id: id }, {...payload});
+
+    const exist = await Package.findById(id);
+
+    if (!exist) {
+        throw new AppError(
+            httpStatus.NOT_FOUND,
+            'Package not found',
+        );
+    }
+    const packages = await Package.updateOne({ _id: id }, { ...payload });
+    return packages;
+}
+
+const delete_Package = async (id: string) => {
+    const exist = await Package.findById(id);
+
+    if (!exist) {
+        throw new AppError(
+            httpStatus.NOT_FOUND,
+            'Package not found',
+        );
+    }
+    const packages = await Package.updateOne({ _id: id }, {isDeleted : true});
     return packages;
 }
 
@@ -27,8 +49,16 @@ const getPackages_by_type = async () => {
     return packages;
 }
 
+// get packeges details
+const getPackages_details = async (id : string) => {
+    const packages = await Package.findOne({_id : id, isDeleted : false});
+    return packages;
+}
+
 export const packageService = {
     create_Package,
     getPackages_by_type,
-    update_Package
+    update_Package,
+    delete_Package,
+    getPackages_details
 }

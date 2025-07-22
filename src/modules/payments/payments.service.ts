@@ -162,7 +162,7 @@ const confirmPayment = async (query: Record<string, any>) => {
 
 
 const getAllPayments = async (query: Record<string, any>) => {
-  const paymentModel = new QueryBuilder(Payment.find({ isPaid: true }).populate({ path: "user", select: "-password -fcmToken" }), query)
+  const paymentModel = new QueryBuilder(Payment.find({ isPaid: true }).populate({ path: "user", select: "-password -fcmToken" }).populate({path : "package"}), query)
     .search(['name', 'email', 'contact'])
     .filter()
     .paginate()

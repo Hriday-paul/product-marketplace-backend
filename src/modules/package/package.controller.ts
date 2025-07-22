@@ -22,6 +22,18 @@ const updatePackage = catchAsync(async (req: Request, res: Response) => {
         message: 'Package updated successfully',
         data: result,
     });
+});
+
+
+const deletePackage = catchAsync(async (req: Request, res: Response) => {
+    
+    const result = await packageService.delete_Package(req.params.id)
+    sendResponse(res, {
+        statusCode: 200,
+        success: true,
+        message: 'Package deleted successfully',
+        data: result,
+    });
 })
 
 const getPackages_by_type = catchAsync(async (req, res: Response) => {
@@ -37,8 +49,23 @@ const getPackages_by_type = catchAsync(async (req, res: Response) => {
 
 })
 
+const getPackages_details = catchAsync(async (req, res: Response) => {
+
+    const result = await packageService.getPackages_details(req.params.id)
+
+    sendResponse(res, {
+        statusCode: 200,
+        success: true,
+        message: 'Boasting Package details retrived successfully',
+        data: result,
+    });
+
+})
+
 export const packageControler = {
     createPackage,
     updatePackage,
-    getPackages_by_type
+    getPackages_by_type,
+    deletePackage,
+    getPackages_details
 }

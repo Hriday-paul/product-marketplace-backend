@@ -119,10 +119,22 @@ router.get(
     userController.getMyProfile,
 );
 
+router.get(
+    '/:id',
+    auth(USER_ROLE.admin, USER_ROLE.user),
+    userController.userDetails,
+);
+
 router.delete(
     '/delete-account',
     auth(USER_ROLE.user),
     userController.deletemyAccount,
+);
+
+router.delete(
+    '/delete-account/:id',
+    auth(USER_ROLE.admin),
+    userController.deleteUser,
 );
 
 export const userRoutes = router;

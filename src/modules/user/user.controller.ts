@@ -101,7 +101,7 @@ const update_user_status: RequestHandler<{ id: string }, {}, { status: boolean }
 })
 
 // delete my accont
-const deletemyAccount: RequestHandler<{ id: string }, {}, { status: boolean }> = catchAsync(async (req, res) => {
+const deletemyAccount = catchAsync(async (req, res) => {
 
     const result = await userService.deletemyAccount(req.user._id);
 
@@ -109,6 +109,30 @@ const deletemyAccount: RequestHandler<{ id: string }, {}, { status: boolean }> =
         statusCode: httpStatus.OK,
         success: true,
         message: 'Your account deleted successfully',
+        data: result,
+    });
+})
+
+const deleteUser = catchAsync(async (req, res) => {
+
+    const result = await userService.deletemyAccount(req.params.id);
+
+    sendResponse(res, {
+        statusCode: httpStatus.OK,
+        success: true,
+        message: 'User account deleted successfully',
+        data: result,
+    });
+})
+
+const userDetails = catchAsync(async (req, res) => {
+
+    const result = await userService.userDetails(req.params.id);
+
+    sendResponse(res, {
+        statusCode: httpStatus.OK,
+        success: true,
+        message: 'User details retrived successfully',
         data: result,
     });
 })
@@ -121,5 +145,7 @@ export const userController = {
     getMyProfile,
     update_user_status,
     all_users,
-    deletemyAccount
+    deletemyAccount,
+    deleteUser,
+    userDetails
 }

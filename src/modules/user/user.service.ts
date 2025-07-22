@@ -81,7 +81,7 @@ const updateStoreProfile = async (payload: IstoreProfile, userId: string, image:
 
 //get all users
 const allUsers = async (query: Record<string, any>) => {
-    const userModel = new QueryBuilder(User.find({ role: { $ne: "admin" } }, { password: 0 }), query)
+    const userModel = new QueryBuilder(User.find({ role: { $ne: "admin" }, isDeleted: false }, { password: 0 }), query)
         .search(['name', 'email', 'contact'])
         .filter()
         .paginate()
@@ -110,8 +110,22 @@ const status_update_user = async (payload: { status: boolean }, id: string) => {
 
 const deletemyAccount = async (userId: string) => {
 
-    const res = await User.updateOne({ _id: userId }, { isDeleted: true });
+    const exist = await User.findById(userId);
 
+    if (!exist) {
+        throw new AppError(
+            httpStatus.NOT_FOUND,
+            'User not found',
+        );
+    }
+
+    const res = await User.updateOne({ _id: userId, role: { $ne: "admin" } }, { isDeleted: true });
+
+    return res;
+}
+
+const userDetails = async(userId : string)=>{
+    const res = await User.findById(userId).select("-password -fcmToken -verification");
     return res;
 }
 
@@ -122,5 +136,6 @@ export const userService = {
     getUserById,
     allUsers,
     status_update_user,
-    deletemyAccount
+    deletemyAccount,
+    userDetails
 }

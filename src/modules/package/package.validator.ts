@@ -8,3 +8,8 @@ export const addPackageValidator = [
     check('price').trim().escape().not().isEmpty().withMessage('price is required').isNumeric().withMessage('invalid price format'),
 ]
 
+export const updatePackageValidator = [
+    check('product_limit').trim().optional().isFloat().withMessage('invalid product_limit format'),
+    check('duration_day').trim().optional().isFloat().withMessage('invalid duration format'),
+    check('price').trim().optional().isNumeric().withMessage('invalid price format'),
+]
