@@ -27,6 +27,7 @@ export interface IUser {
 
   isOnline: boolean;
   fcmToken?: string;
-  notification : boolean
+  notification : boolean,
+  isSocialLogin : boolean
 }
 

@@ -114,6 +114,10 @@ const userSchema: Schema<IUser> = new Schema(
       type: String,
       required: false,
     },
+    isSocialLogin : {
+      type : Boolean,
+      default : false
+    },
     notification: {
       type: Boolean,
       required: true,

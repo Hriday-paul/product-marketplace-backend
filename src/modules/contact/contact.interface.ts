@@ -6,4 +6,7 @@ export interface Icontact {
   email: string;
   contact : string;
   description: string;
+  isReplied : boolean;
+  reply_message : null | string,
+  replied_At : Date
 }

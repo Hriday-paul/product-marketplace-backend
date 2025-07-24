@@ -13,7 +13,13 @@ export const createAccountValidator = [
 
 export const loginAccountValidator = [
     check('email').trim().escape().not().isEmpty().withMessage('Email is required').isEmail().normalizeEmail({ all_lowercase: true }).withMessage('Invalid Email'),
-    check('password').trim().escape().not().isEmpty().withMessage('password is required').isString(),
+    check('password').trim().not().isEmpty().withMessage('password is required').isString(),
+]
+
+export const social_loginAccountValidator = [
+    check('email').trim().escape().not().isEmpty().withMessage('Email is required').isEmail().normalizeEmail({ all_lowercase: true }).withMessage('Invalid Email'),
+    check('image').trim().not().isEmpty().withMessage('image is required').isString(),
+    check('first_name').trim().not().isEmpty().withMessage('first_name is required').isString(),
 ]
 
 export const refreshTokenValidator = [

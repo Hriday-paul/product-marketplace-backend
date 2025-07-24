@@ -17,6 +17,16 @@ const createcontact = catchAsync(async (req: Request, res: Response) => {
   });
 });
 
+const replyContact = catchAsync(async (req: Request, res: Response) => {
+  const result = await contactService.replyContact(req.params.id, req.body.message);
+  sendResponse(res, {
+    statusCode: 200,
+    success: true,
+    message: 'Reply message sent successfully',
+    data: result,
+  });
+});
+
 const getAllcontact = catchAsync(async (req: Request, res: Response) => {
   const result = await contactService.getAllcontact(req.query);
   sendResponse(res, {
@@ -51,4 +61,5 @@ export const contactController = {
   createcontact,
   getAllcontact,
   deletecontact,
+  replyContact
 };

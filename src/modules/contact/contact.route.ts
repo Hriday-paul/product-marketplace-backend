@@ -2,7 +2,7 @@ import { Router } from 'express';
 import { contactController } from './contact.controller';
 import { USER_ROLE } from '../user/user.constants';
 import auth from '../../middleware/auth';
-import { createContactValidator } from './contact.validation';
+import { createContactValidator, replyContactValidator } from './contact.validation';
 import req_validator from '../../middleware/req_validation';
 
 const router = Router();
@@ -12,6 +12,14 @@ router.post(
   createContactValidator,
   req_validator(),
   contactController.createcontact,
+);
+
+router.post(
+  '/reply/:id',
+  replyContactValidator,
+  req_validator(),
+  auth(USER_ROLE.admin),
+  contactController.replyContact,
 );
 
 // router.patch('/update/:id', contactController.updatecontact);

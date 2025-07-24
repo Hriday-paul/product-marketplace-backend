@@ -38,6 +38,19 @@ const loginUser = catchAsync(async (req: Request<{}, {}, { email: string, passwo
     });
 })
 
+//social login
+const socialLogin = catchAsync(async (req: Request<{}, {}, { email: string, image: string, first_name : string }>, res: Response) => {
+
+    const result = await authService.socialLogin(req.body);
+    
+    sendResponse(res, {
+        statusCode: httpStatus.OK,
+        success: true,
+        message: 'Logged in successfully',
+        data: result,
+    });
+})
+
 const adminLogin = catchAsync(async (req: Request<{}, {}, { email: string, password: string }>, res: Response) => {
     const result = await authService.adminLogin(req.body)
     
@@ -106,4 +119,5 @@ export const authController = {
     resetPassword,
     forgotPassword,
     refreshToken,
+    socialLogin
 }

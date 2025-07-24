@@ -38,6 +38,37 @@ const createContact = async (payload: Icontact) => {
   return contacts;
 };
 
+const replyContact = async (id: string, message: string) => {
+
+  const contact = await Contact.findById(id);
+
+  if (!contact) {
+    throw new AppError(httpStatus.NOT_FOUND, 'Contact Not Found!');
+  }
+
+  if (contact?.isReplied) {
+    throw new AppError(httpStatus.FORBIDDEN, 'You already replied to this message. Please, continue with email');
+  }
+
+  const emailPath = path.join(
+    __dirname,
+    '../../public/view/reply_email.html',
+  );
+  // If 'isApproved' is set to true, send an email
+  await sendEmail(
+    contact?.email,
+    'Support Reply from Sellex',
+    fs
+      .readFileSync(emailPath, 'utf8')
+      .replace('{{customer_name}}', contact?.firstName + " " + contact?.lastName)
+      .replace('{{details}}', message)
+  );
+
+  const contacts = await Contact.updateOne({ _id: id }, { isReplied: true, reply_message: message, replied_At: new Date() });
+
+  return contacts;
+};
+
 const getAllcontact = async (query: Record<string, any>) => {
   const contactModel = new QueryBuilder(Contact.find(), query)
     .search(['fullname', 'email'])
@@ -67,4 +98,5 @@ export const contactService = {
   createContact,
   getAllcontact,
   deletecontact,
+  replyContact
 };
