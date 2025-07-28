@@ -5,7 +5,7 @@
   "main": "dist/index.js",
   "scripts": {
     "build": "npx tsc",
-    "postbuild": "xcopy src\\public\\view dist\\public\\view /E /I /Y",
+    "postbuild": "mkdir -p dist/public/view && cp -r src/public/view/* dist/public/view/",
     "start": "node dist/server.js",
     "dev": "nodemon src/server.ts",
     "test": "echo \"Error: no test specified\" && exit 1"
