@@ -423,6 +423,7 @@ const initializeSocketIO = (server: HttpServer) => {
       });
     } catch (error) {
       console.error('-- socket.io connection error --', error);
+      socket.emit('error', { message: "connection error" })
     }
   });
 
