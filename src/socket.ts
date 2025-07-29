@@ -28,7 +28,7 @@ const initializeSocketIO = (server: HttpServer) => {
   });
 
   // Online users
-  const onlineUser = new Set();
+  // const onlineUser = new Set();
 
   io.on('connection', async socket => {
     console.log('connected', socket?.id);
@@ -43,26 +43,24 @@ const initializeSocketIO = (server: HttpServer) => {
         config.jwt_access_secret as string,
       ) as JwtPayload;
 
-      const user: any = await User.findById(decode.userId).select('-password');
+      const user: any = await User.findOneAndUpdate({ _id: decode.userId }, { isOnline: true }, { new: true }).select('-password');
 
       if (!user) {
-        // io.emit('io-error', {success:false, message:'invalid Token'});
+        io.emit('io-error', { success: false, message: 'invalid Token' });
         throw new AppError(httpStatus.UNAUTHORIZED, 'Invalid token');
       }
 
       socket.join(user?._id?.toString());
 
       //----------------------user id set in online array-------------------------//
-      onlineUser.add(user?._id?.toString());
-
-      socket.on('check', (data, callback) => {
-        console.log(data);
-
-        callbackFn(callback, { success: true });
-      });
+      // onlineUser.add(user?._id?.toString());
 
       //----------------------online array send for front end------------------------//
-      io.emit('onlineUser', Array.from(onlineUser));
+      // io.emit('onlineUser', Array.from(onlineUser));
+      const chatList = await chatService.getMyChatList(user?._id);
+      const myChat = 'chat-list::' + user?._id;
+
+      io.emit(myChat, chatList);
 
       //----------------------user details and messages send for front end -->(as need to use)------------------------//
       socket.on('message-page', async (data, callback) => {
@@ -381,7 +379,7 @@ const initializeSocketIO = (server: HttpServer) => {
       socket.on('stopTyping', function (payload, callback) {
         try {
           const { receiver } = payload;
-          
+
           const chat = 'stopTyping::' + receiver.toString();
           const message = user?.first_name + ' is stop typing...';
           socket.emit(chat, { message: message });
@@ -416,11 +414,18 @@ const initializeSocketIO = (server: HttpServer) => {
       });
 
       //-----------------------Disconnect------------------------//
-      socket.on('disconnect', () => {
-        onlineUser.delete(user?._id?.toString());
-        io.emit('onlineUser', Array.from(onlineUser));
+      socket.on('disconnect', async () => {
+        // onlineUser.delete(user?._id?.toString());
+        await User.updateOne({ _id: user?._id }, { isOnline: false })
+        // io.emit('onlineUser', Array.from(onlineUser));
+
+        const chatList = await chatService.getMyChatList(user?._id);
+        const myChat = 'chat-list::' + user?._id;
+        io.emit(myChat, chatList);
+
         console.log('disconnect user ', socket.id);
       });
+      
     } catch (error) {
       console.error('-- socket.io connection error --', error);
       socket.emit('error', { message: "connection error" })
