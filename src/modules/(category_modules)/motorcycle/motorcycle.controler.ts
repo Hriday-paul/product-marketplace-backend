@@ -5,6 +5,7 @@ import httpStatus from 'http-status';
 import { motorcycleService } from "./motorcycle.service";
 import AppError from "../../../error/AppError";
 import { productService } from "../../products/products.service";
+import { access_productService } from "../../access_product/access_products.service";
 
 const addMotorcycle = catchAsync(async (req, res) => {
 
@@ -30,7 +31,10 @@ const addMotorcycle = catchAsync(async (req, res) => {
     req.body.category = "motorcycle"
     req.body.sellingPrice = req.body.price
 
-    req.body.location = { type: "Point", coordinates: [req.body.long, req.body.lat] }
+    req.body.location = { type: "Point", coordinates: [req.body.long, req.body.lat] };
+
+    // ---------------check access to add product-----------
+    await access_productService.checkAccess(req.user._id);
 
     const result = await motorcycleService.addMotorcycle(req.body);
 

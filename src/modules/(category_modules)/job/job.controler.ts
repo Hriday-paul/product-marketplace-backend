@@ -5,6 +5,7 @@ import httpStatus from 'http-status';
 import AppError from "../../../error/AppError";
 import { jobService } from "./job.service";
 import { productService } from "../../products/products.service";
+import { access_productService } from "../../access_product/access_products.service";
 
 const addJob = catchAsync(async (req, res) => {
 
@@ -30,7 +31,10 @@ const addJob = catchAsync(async (req, res) => {
     req.body.condition = "new"
     req.body.images = filePaths
 
-    req.body.location = { type: "Point", coordinates: [req.body.long, req.body.lat] }
+    req.body.location = { type: "Point", coordinates: [req.body.long, req.body.lat] };
+
+    // ---------------check access to add product-----------
+    await access_productService.checkAccess(req.user._id)
 
     const result = await jobService.addJob(req.body)
 

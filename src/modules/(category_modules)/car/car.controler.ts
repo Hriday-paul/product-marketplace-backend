@@ -5,6 +5,7 @@ import httpStatus from "http-status";
 import sendResponse from "../../../utils/sendResponse";
 import { productService } from "../../products/products.service";
 import { carService } from "./car.service";
+import { access_productService } from "../../access_product/access_products.service";
 
 
 const addCar = catchAsync(async (req, res) => {
@@ -32,7 +33,10 @@ const addCar = catchAsync(async (req, res) => {
     req.body.sellingPrice = req.body.price
     req.body.stock = 1
 
-    req.body.location = { type: "Point", coordinates: [req.body.long, req.body.lat] }
+    req.body.location = { type: "Point", coordinates: [req.body.long, req.body.lat] };
+
+    // ---------------check access to add product-----------
+    await access_productService.checkAccess(req.user._id)
 
     const result = await carService.addCar(req.body);
 

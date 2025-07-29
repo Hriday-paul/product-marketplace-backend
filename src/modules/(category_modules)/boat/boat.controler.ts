@@ -33,7 +33,7 @@ const addBoat = catchAsync(async (req, res) => {
     req.body.location = { type: "Point", coordinates: [req.body.long, req.body.lat] }
 
     // ---------------check access to add product-----------
-    // await access_productService.checkAccess(req.user._id)
+    await access_productService.checkAccess(req.user._id)
 
     //-----------------------add product--------------
     const result = await boatService.addBoat(req.body, req.user._id);

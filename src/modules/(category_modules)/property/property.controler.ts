@@ -4,6 +4,7 @@ import config from '../../../config';
 import AppError from '../../../error/AppError';
 import sendResponse from '../../../utils/sendResponse';
 import { propertyService } from './property.service';
+import { access_productService } from '../../access_product/access_products.service';
 
 const addPropertySell = catchAsync(async (req, res) => {
 
@@ -28,7 +29,10 @@ const addPropertySell = catchAsync(async (req, res) => {
     req.body.productModel = "properties_sell"
     req.body.category = "propertie"
 
-    req.body.location = { type: "Point", coordinates: [req.body.long, req.body.lat] }
+    req.body.location = { type: "Point", coordinates: [req.body.long, req.body.lat] };
+
+    // ---------------check access to add product-----------
+    await access_productService.checkAccess(req.user._id)
 
     const result = await propertyService.addPropertySell(req.body)
 
