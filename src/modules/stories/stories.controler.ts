@@ -4,6 +4,7 @@ import catchAsync from "../../utils/catchAsync";
 import sendResponse from "../../utils/sendResponse";
 import { storiesService } from "./stories.service";
 import httpStatus from "http-status";
+import { uploadToS3 } from "../../utils/s3";
 
 const allStories = catchAsync(async (req, res) => {
     const result = await storiesService.allStories()
@@ -18,7 +19,14 @@ const allStories = catchAsync(async (req, res) => {
 const addStorie = catchAsync(async (req, res) => {
 
     let video;
-    video = req.file?.filename && (config.BASE_URL + '/videos/' + req.file.filename);
+    // video = req.file?.filename && (config.BASE_URL + '/videos/' + req.file.filename);
+
+    if (req.file) {
+        video = await uploadToS3({
+            file: req.file,
+            fileName: `videos/reels/${Math.floor(100000 + Math.random() * 900000)}`,
+        });
+    }
 
     const result = await storiesService.addStorie(req.body, video || "", req?.user?._id);
 

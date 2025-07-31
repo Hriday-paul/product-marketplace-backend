@@ -3,25 +3,14 @@ import { StoriesControler } from "./stories.controler";
 import auth from "../../middleware/auth";
 import { USER_ROLE } from "../user/user.constants";
 import req_validator from "../../middleware/req_validation";
-import multer from "multer";
-import path from "path";
+import multer, { memoryStorage } from "multer";
 import parseData from "../../middleware/parseData";
 import { addLikeValidator, addStorieValidator } from "./stories.validator";
 
 const router = Router();
 
-export const file_upload_config = multer.diskStorage({
-    destination: function (req, file, cb) {
-        cb(null, path.join('public', 'videos'));
-    },
-    filename: function (req, file, cb) {
-        //original name helps us to get the file extension
-        cb(null, Date.now() + "-" + file.originalname);
-    },
-});
-
 export const video_Upload = multer({
-    storage: file_upload_config,
+    storage: memoryStorage(),
     limits: { fileSize: 1024 * 1024 * 50 /* 50 mb */ },
     fileFilter(req, file, cb) {
         // if file type valid

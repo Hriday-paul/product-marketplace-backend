@@ -6,6 +6,7 @@ import sendResponse from "../../utils/sendResponse";
 import httpStatus from 'http-status'
 import { IstoreProfile } from "./user.models";
 import config from "../../config";
+import { uploadToS3 } from "../../utils/s3";
 
 //get all users
 const all_users = catchAsync(async (req: Request, res: Response) => {
@@ -22,7 +23,14 @@ const all_users = catchAsync(async (req: Request, res: Response) => {
 const updateProfile = catchAsync(async (req: Request<{}, {}, IUser>, res: Response) => {
 
     let image;
-    image = req.file?.filename && (config.BASE_URL + '/images/' + req.file.filename);
+    // image = req.file?.filename && (config.BASE_URL + '/images/' + req.file.filename);
+
+    if (req.file) {
+        image = await uploadToS3({
+            file: req.file,
+            fileName: `images/user/${Math.floor(100000 + Math.random() * 900000)}`,
+        });
+    }
 
     const result = await userService.updateProfile(req.body, req.user._id, image || "")
 
@@ -40,9 +48,28 @@ const createStoreProfile = catchAsync(async (req: Request<{}, {}, IstoreProfile>
     const files = req.files as { [fieldname: string]: Express.Multer.File[] };
 
     let image, banner;
-    image = files?.image?.[0]?.filename && (config.BASE_URL + '/images/' + files.image[0].filename)
 
-    banner = files?.banner?.[0]?.filename && (config.BASE_URL + '/images/' + files.banner[0].filename)
+    // image = files?.image?.[0]?.filename && (config.BASE_URL + '/images/' + files.image[0].filename)
+
+    // banner = files?.banner?.[0]?.filename && (config.BASE_URL + '/images/' + files.banner[0].filename);
+
+
+    if (files) {
+        //banners
+        if (files?.banner?.length) {
+            banner = (await uploadToS3({
+                file: files?.banner[0],
+                fileName: `images/user/banner/${Math.floor(100000 + Math.random() * 900000)}${Date.now()}`,
+            })) as string;
+        }
+
+        if (files?.image?.length) {
+            image = (await uploadToS3({
+                file: files?.image[0],
+                fileName: `images/user/${Math.floor(100000 + Math.random() * 900000)}${Date.now()}`,
+            })) as string;
+        }
+    }
 
     const result = await userService.createStoreProfile(req.body, req.user._id, image || "", banner || "")
 
@@ -65,7 +92,22 @@ const updateStoreProfile = catchAsync(async (req: Request<{}, {}, IstoreProfile>
 
     banner = files?.banner?.[0]?.filename && config.BASE_URL + '/images/' + files.banner[0].filename
 
-    console.log(image, banner)
+    if (files) {
+        //banners
+        if (files?.banner?.length) {
+            banner = (await uploadToS3({
+                file: files?.banner[0],
+                fileName: `images/user/banner/${Math.floor(100000 + Math.random() * 900000)}${Date.now()}`,
+            })) as string;
+        }
+
+        if (files?.image?.length) {
+            image = (await uploadToS3({
+                file: files?.image[0],
+                fileName: `images/user/${Math.floor(100000 + Math.random() * 900000)}${Date.now()}`,
+            })) as string;
+        }
+    }
 
     const result = await userService.updateStoreProfile(req.body, req.user._id, image, banner)
 

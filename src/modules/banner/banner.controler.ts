@@ -4,6 +4,7 @@ import httpStatus from 'http-status';
 import { bannerService } from "./banner.service";
 import config from "../../config";
 import AppError from "../../error/AppError";
+import { uploadToS3 } from "../../utils/s3";
 
 const allBanners = catchAsync(async (req, res) => {
     const result = await bannerService.banners();
@@ -18,7 +19,14 @@ const allBanners = catchAsync(async (req, res) => {
 const uploadBanner = catchAsync(async (req, res) => {
 
     let image;
-    image = req.file?.filename && (config.BASE_URL + '/images/' + req.file.filename);
+    // image = req.file?.filename && (config.BASE_URL + '/images/' + req.file.filename);
+
+    if (req.file) {
+        image = await uploadToS3({
+            file: req.file,
+            fileName: `images/user/${Math.floor(100000 + Math.random() * 900000)}`,
+        });
+    }
 
     if (!image) {
         throw new AppError(

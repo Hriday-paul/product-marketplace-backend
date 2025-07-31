@@ -8,7 +8,11 @@ import { image_Upload } from "../user/user.rout";
 const router = Router();
 
 router.get("/", bannerControler.allBanners);
-router.delete("/:id", auth(USER_ROLE.admin), bannerControler.deleteBanner);
+
+router.delete("/:id", 
+    auth(USER_ROLE.admin),
+     bannerControler.deleteBanner);
+
 router.post("/",
     auth(USER_ROLE.admin),
     image_Upload.single('image'),

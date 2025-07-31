@@ -1,4 +1,6 @@
+import config from "../../config";
 import AppError from "../../error/AppError";
+import { deleteFromS3 } from "../../utils/s3";
 import { Banners } from "./banner.model";
 import httpStatus from 'http-status';
 
@@ -16,14 +18,20 @@ const uploadBanner = async (image: string) => {
 
 const deleteBanner = async (bannerId: string) => {
 
-    const res = await Banners.deleteOne({ _id: bannerId })
+    const res = await Banners.findOneAndDelete({ _id: bannerId })
 
-    if (res.deletedCount <= 0) {
+    if (!res) {
         throw new AppError(
             httpStatus.NOT_FOUND,
             'Banner not found',
         );
     }
+
+    // if (res.image) {
+    //     const key = res.image.split(config.aws.aws_url!)[1]
+    //     const dlt_res = await deleteFromS3(key);
+    //     console.log(dlt_res)
+    // }
 
     return res;
 }

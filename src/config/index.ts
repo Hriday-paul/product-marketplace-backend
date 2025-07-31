@@ -7,6 +7,14 @@ const stripe = {
   stripe_api_secret: process.env.STRIPE_API_SECRET,
 };
 
+const aws = {
+  accessKeyId: process.env.S3_BUCKET_ACCESS_KEY,
+  secretAccessKey: process.env.S3_BUCKET_SECRET_ACCESS_KEY,
+  region: process.env.AWS_REGION,
+  bucket: process.env.AWS_BUCKET_NAME,
+  spacesEndpoint : process.env.SPACES_ENDPOINT,
+};
+
 export default {
   NODE_ENV: process.env.NODE_ENV,
   port: process.env.PORT,
@@ -30,4 +38,5 @@ export default {
   stripe_secret: process.env.STRIPE_API_SECRET,
   stripe_key: process.env.STRIPE_API_KEY,
   stripe,
+  aws
 };
