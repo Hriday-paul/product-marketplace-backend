@@ -9,11 +9,7 @@ import catchAsync from "../../utils/catchAsync";
 //create user
 const createUser = catchAsync(async (req: Request<{}, {}, IUser>, res: Response) => {
 
-    console.log("signup request is goted--------------------------")
-
     const result = await authService.createUser(req.body);
-
-    console.log("user is created--------------------------")
 
     let otptoken;
 
