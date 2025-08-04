@@ -37,7 +37,10 @@ const createUser = async (payload: IUser) => {
         throw new AppError(httpStatus.BAD_REQUEST, 'User creation failed');
     }
 
-    return user;
+    const userDoc = (user as any).toObject();
+    delete userDoc.password;
+
+    return userDoc;
 };
 
 // Login
