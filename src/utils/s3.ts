@@ -75,7 +75,8 @@ export const uploadManyToS3 = async (
 
       await s3Client.send(command);
 
-      const url = `https://${config.aws.bucket}.s3.${config.aws.region}.amazonaws.com/${fileKey}`;
+      // const url = `https://${config.aws.bucket}.s3.${config.aws.region}.amazonaws.com/${fileKey}`;
+      const url = `https://${config.aws.bucket}.${config.aws.spacesEndpoint}/${fileKey}`;
       return { url, key: newFileName };
     });
 
