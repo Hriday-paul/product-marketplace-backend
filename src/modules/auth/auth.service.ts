@@ -44,7 +44,7 @@ const createUser = async (payload: IUser) => {
 };
 
 // Login
-const loginUser = async (payload: { email: string, password: string, fcmToken?: string }) => {
+const loginUser = async (payload: { email: string, password: string, fcmToken?: string, lat?: string, long?: string }) => {
 
     const user: IUser | null = await User.findOne({ email: payload?.email, role: { $nin: ['admin'] } });
 
@@ -84,6 +84,14 @@ const loginUser = async (payload: { email: string, password: string, fcmToken?: 
             updatedUser = await User.findOneAndUpdate(
                 { email: payload.email },
                 { fcmToken: payload.fcmToken },
+                { new: true }
+            ) as IUser;
+        }
+
+        if (payload?.lat && payload?.long) {
+            updatedUser = await User.findOneAndUpdate(
+                { email: payload.email },
+                { lat: payload?.lat, long: payload?.long },
                 { new: true }
             ) as IUser;
         }
@@ -188,7 +196,7 @@ const adminLogin = async (payload: { email: string, password: string }) => {
     };
 };
 
-const socialLogin = async ({ email, image, first_name }: { email: string, image: string, first_name: string }) => {
+const socialLogin = async ({ email, image, first_name, lat, long }: { email: string, image: string, first_name: string, lat?: string, long?: string }) => {
 
     let user: IUser | null = await User.findOne({ email: email, role: { $ne: "admin" } });
 
@@ -205,7 +213,7 @@ const socialLogin = async ({ email, image, first_name }: { email: string, image:
             throw new AppError(httpStatus.FORBIDDEN, 'Your account is deleted');
         }
 
-        user = await User.findOneAndUpdate({ email }, { email, image, first_name, isverified: true, isSocialLogin: true }, { upsert: true, new: true }) as IUser;
+        user = await User.findOneAndUpdate({ email }, { email, image, first_name, isverified: true, isSocialLogin: true, lat: lat, long }, { upsert: true, new: true }) as IUser;
     }
 
     const userDoc = (user as any).toObject();
