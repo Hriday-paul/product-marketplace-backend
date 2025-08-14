@@ -109,7 +109,7 @@ const initializeSocketIO = (server: HttpServer) => {
               { sender: user?._id, receiver: userId },
               { sender: userId, receiver: user?._id },
             ],
-          }).sort({ updatedAt: 1 });
+          }).sort({ createdAt: 1 });
 
           socket.emit('message', getPreMessage || []);
 
