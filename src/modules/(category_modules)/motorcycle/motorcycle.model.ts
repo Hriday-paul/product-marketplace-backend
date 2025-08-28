@@ -14,25 +14,25 @@ const MotorCycleSchema: Schema<IMotorcycle> = new Schema(
         motorcycleType: { type: String, required: true }, // required
         modelYear: { type: Number, required: false },
         fuel: { type: String, required: false },
-        horsepower: { type: Number, required: false, default : 0 },
-        displacementCCM: { type: Number, required: false, default : 0 },
-        weightKg: { type: Number, required: false, default : 0 },
+        horsepower: { type: Number, required: false, default: 0 },
+        displacementCCM: { type: Number, required: false, default: 0 },
+        weightKg: { type: Number, required: false, default: 0 },
         color: { type: String, required: false },
 
         equipment: { type: [String], default: [] },
 
-        mileage: { type: Number, required: false, default : 0 },
-        numberOfOwners: { type: Number, required: false, default : 0 },
-        hasConditionReport: { type: Boolean, required: false, default : false },
-        hasMaintenance: { type: Boolean, required: false, default : false },
+        mileage: { type: Number, required: false, default: 0 },
+        numberOfOwners: { type: Number, required: false, default: 0 },
+        hasConditionReport: { type: Boolean, required: false, default: false },
+        hasMaintenance: { type: Boolean, required: false, default: false },
         warrantyType: { type: String, required: false },
-        video: { type: String, required : false },
-      
-        reRegistrationFeeInNOK: { type: Number, required : false, default : 0 },
-        exemptFromReRegistrationFee: { type: Boolean, required: false, default : false },
+        video: { type: String, required: false },
 
-         sellingPriceNOK : {type : Number, required : true, default : 0},
-        
+        reRegistrationFeeInNOK: { type: Number, required: false, default: 0 },
+        exemptFromReRegistrationFee: { type: Boolean, required: false, default: false },
+
+        sellingPriceNOK: { type: Number, required: true, default: 0 },
+
         phoneNumber: { type: String, required: false },
         address: { type: String, required: true } // required
     }

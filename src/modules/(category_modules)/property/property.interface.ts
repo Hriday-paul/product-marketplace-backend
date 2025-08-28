@@ -36,7 +36,7 @@ export interface IPropertySell {
     sharedCostAfterInterest: string,
     sharedCostInclude: string,
     propertyTaxValue: string,
-    listingPrice: string,
+    listingPrice: number,
     additionalCost: string,
     additionalCostInclude: string,
     sharedDebt: string,

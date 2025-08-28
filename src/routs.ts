@@ -13,6 +13,7 @@ import { ReelsRouts } from './modules/stories/stories.rout';
 import { notificationRoute } from './modules/notification/notification.routes';
 import { packageRouts } from './modules/package/package.rout';
 import { favouriteRouts } from './modules/favourites/favourites.rout';
+import { searchRouts } from './modules/searches/searches.rout';
 
 
 const router = express.Router();
@@ -69,6 +70,10 @@ const moduleRoutes = [
     {
         path: '/favourites',
         route: favouriteRouts,
+    },
+    {
+        path: '/searches',
+        route: searchRouts,
     }
 ];
 

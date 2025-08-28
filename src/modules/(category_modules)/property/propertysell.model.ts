@@ -39,7 +39,7 @@ const PropertySellSchema = new Schema<IPropertySell>(
         sharedCostAfterInterest: String,
         sharedCostInclude: String,
         propertyTaxValue: String,
-        listingPrice: String,
+        listingPrice: {type : Number, default : 0},
         additionalCost: String,
         additionalCostInclude: String,
         sharedDebt: String,

@@ -46,7 +46,8 @@ const addCar = catchAsync(async (req, res) => {
     req.body.isDeleted = false
     req.body.productModel = "cars"
     req.body.category = "car"
-    req.body.sellingPrice = req.body.price
+    req.body.sellingPrice = req.body.sellingPriceNOK || 0
+    req.body.price = req.body.sellingPriceNOK || 0
     req.body.stock = 1
 
     req.body.location = { type: "Point", coordinates: [req.body.long, req.body.lat] };
@@ -102,7 +103,8 @@ const addCaravan = catchAsync(async (req, res) => {
     req.body.isDeleted = false
     req.body.productModel = "caravans"
     req.body.category = "caravan"
-    req.body.sellingPrice = req.body.price
+    req.body.sellingPrice = req.body.sellingPriceNOK
+    req.body.price = req.body.sellingPriceNOK
     req.body.stock = 1
 
     req.body.location = { type: "Point", coordinates: [req.body.long, req.body.lat] }
@@ -159,6 +161,7 @@ const addBobil = catchAsync(async (req, res) => {
     req.body.productModel = "bobils"
     req.body.category = "bobil"
     req.body.sellingPrice = req.body.price
+    req.body.price = req.body.sellingPriceNOK
     req.body.stock = 1
 
     req.body.location = { type: "Point", coordinates: [req.body.long, req.body.lat] }

@@ -18,6 +18,7 @@ const allProducts = async (query: Record<string, any>) => {
     const lat = query?.lat || null;
     const long = query?.long || null;
 
+
     const filters: any = {
         title: { $regex: search, $options: "i" },
         isDeleted: false,
@@ -25,6 +26,18 @@ const allProducts = async (query: Record<string, any>) => {
 
     if (category) filters.category = category;
     if (condition) filters.condition = condition;
+
+    const hasMin = query?.min !== undefined && query?.min !== null;
+    const hasMax = query?.max !== undefined && query?.max !== null;
+
+    if (hasMin && hasMax) {
+        filters.price = { $gte: Number(query.min), $lte: Number(query.max) };
+    } else if (hasMin) {
+        filters.price = { $gte: Number(query.min) };
+    } else if (hasMax) {
+        filters.price = { $lte: Number(query.max) };
+    }
+    
 
     if (lat && long) {
         filters.location = {
@@ -352,8 +365,8 @@ const singleProduct = async (productId: string) => {
                     {
                         $project: {
                             password: 0,
-                            email : 0,
-                            fcmToken : 0
+                            email: 0,
+                            fcmToken: 0
                         }
                     }
                 ],

@@ -43,6 +43,7 @@ const addPropertySell = catchAsync(async (req, res) => {
     req.body.isDeleted = false
     req.body.productModel = "properties_sell"
     req.body.category = "propertie"
+    req.body.price = req?.body?.listingPrice || 0
 
     req.body.location = { type: "Point", coordinates: [req.body.long, req.body.lat] };
 
@@ -51,7 +52,7 @@ const addPropertySell = catchAsync(async (req, res) => {
     sendResponse(res, {
         statusCode: httpStatus.OK,
         success: true,
-        message: 'new property added successfully',
+        message: 'New property added successfully',
         data: result,
     });
 });
@@ -93,7 +94,7 @@ const addPropertyRent = catchAsync(async (req, res) => {
     req.body.isDeleted = false
     req.body.productModel = "properties_rent"
     req.body.category = "propertie"
-    req.body.price = 0
+    req.body.price = req?.body?.monthlyRent || 0
 
     req.body.location = { type: "Point", coordinates: [req.body.long, req.body.lat] }
 

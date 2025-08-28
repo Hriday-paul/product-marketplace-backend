@@ -45,7 +45,8 @@ const addMotorcycle = catchAsync(async (req, res) => {
     req.body.isDeleted = false
     req.body.productModel = "motorcycles"
     req.body.category = "motorcycle"
-    req.body.sellingPrice = req.body.price
+    req.body.sellingPrice = req.body.sellingPriceNOK || 0
+    req.body.price = req.body.sellingPriceNOK || 0
 
     req.body.location = { type: "Point", coordinates: [req.body.long, req.body.lat] };
 

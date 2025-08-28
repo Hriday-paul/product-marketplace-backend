@@ -44,7 +44,8 @@ const addBoat = catchAsync(async (req, res) => {
     req.body.isDeleted = false
     req.body.productModel = "boats"
     req.body.category = "boat"
-    req.body.images = filePaths
+    req.body.images = filePaths;
+    req.body.price = req?.body?.sellingPrice || 0
 
     req.body.location = { type: "Point", coordinates: [req.body.long, req.body.lat] }
 
