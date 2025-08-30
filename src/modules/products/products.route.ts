@@ -23,7 +23,7 @@ router.get('/top-viewed', productQueryChecker, req_validator(), productControler
 router.get('/my-products', auth(USER_ROLE.user), productQueryChecker, req_validator(), productControler.myProducts);
 router.get('/near-me', auth(USER_ROLE.user), productControler.nearMeProducts);
 
-router.get('/:id', productControler.singleProduct);
+router.get('/:id', auth(USER_ROLE.user, USER_ROLE.admin), productControler.singleProduct);
 router.get('/related/:id', productControler.relatedProducts);
 
 router.patch(

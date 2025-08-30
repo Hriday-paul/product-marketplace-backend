@@ -1,17 +1,31 @@
 import mongoose from "mongoose";
 import { Favorites } from "./favourites.model";
+import AppError from "../../error/AppError";
+import httpstatus from "http-status"
 
 
 const addFavourite = async (product: string, user: string) => {
+
+    const exist = await Favorites.findOne({ product, user });
+
+    if (exist) {
+        throw new AppError(httpstatus.FORBIDDEN, "Product already exist to favourite")
+    }
 
     const res = await Favorites.insertOne({ product, user });
 
     return res;
 }
 
-const deletefavourite = async (favouriteId: string) => {
+const deletefavourite = async (product: string, user: string) => {
 
-    const res = await Favorites.deleteOne({ _id: favouriteId });
+    const exist = await Favorites.findOne({ product, user });
+
+    if (!exist) {
+        throw new AppError(httpstatus.NOT_FOUND, "Favourite product not found")
+    }
+
+    const res = await Favorites.deleteOne({ product });
 
     return res;
 }

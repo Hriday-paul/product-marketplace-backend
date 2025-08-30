@@ -37,7 +37,7 @@ const allProducts = async (query: Record<string, any>) => {
     } else if (hasMax) {
         filters.price = { $lte: Number(query.max) };
     }
-    
+
 
     if (lat && long) {
         filters.location = {
@@ -300,13 +300,41 @@ const topViewsProduct = async () => {
 
 }
 
-const singleProduct = async (productId: string) => {
+const singleProduct = async (productId: string, userId: string) => {
 
     await Products.updateOne({ _id: productId }, { $inc: { total_views: 1 } });
 
     const product = await Products.aggregate([
 
         { $match: { _id: new ObjectId(productId), isDeleted: false } },
+
+        {
+            $lookup: {
+                from: "favourites",
+                let: { productId: "$_id", userId: new ObjectId(userId) },
+                pipeline: [
+                    {
+                        $match: {
+                            $expr: {
+                                $and: [
+                                    { $eq: ["$product", "$$productId"] },
+                                    { $eq: ["$user", "$$userId"] },
+                                ]
+                            }
+                        }
+                    },
+                    { $limit: 1 } // we only need to know if it exists
+                ],
+                as: "favouriteStatus"
+            }
+        },
+        {
+            $addFields: {
+                isFavourite: { $gt: [{ $size: "$favouriteStatus" }, 0] }
+            }
+        },
+        { $unset: "favouriteStatus" },
+
 
         // Lookup and aggregate review data
         {

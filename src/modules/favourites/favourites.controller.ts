@@ -5,7 +5,7 @@ import httpStatus from "http-status"
 
 const deleteFavourite = catchAsync(async (req, res) => {
 
-    const result = await favouriteService.deletefavourite(req?.params?.id);
+    const result = await favouriteService.deletefavourite(req?.params?.id, req?.user?._id);
 
     sendResponse(res, {
         statusCode: httpStatus.OK,

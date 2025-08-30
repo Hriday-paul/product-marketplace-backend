@@ -57,7 +57,7 @@ const nearMeProducts = catchAsync(async (req, res) => {
 })
 
 const singleProduct = catchAsync(async (req, res) => {
-    const result = await productService.singleProduct(req.params.id)
+    const result = await productService.singleProduct(req.params.id, req?.user?._id)
     sendResponse(res, {
         statusCode: httpStatus.OK,
         success: true,

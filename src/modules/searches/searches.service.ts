@@ -10,7 +10,7 @@ const addnewSearches = async (userId: string, payload: ISearches) => {
 }
 
 const mySearchHistory = async (userId: string) => {
-    const res = await Search.find({ user: userId });
+    const res = await Search.find({ user: userId }).sort("-createdAt");
     return res;
 }
 
