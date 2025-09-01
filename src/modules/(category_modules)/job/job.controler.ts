@@ -52,7 +52,7 @@ const addJob = catchAsync(async (req, res) => {
     const result = await jobService.addJob(req.body)
 
     // ------------send notification----------------
-    await productService.sendNotificationAfterAddProduct(req.user._id)
+    productService.sendNotificationAfterAddProduct(req.user._id, result?._id)
 
     sendResponse(res, {
         statusCode: httpStatus.OK,

@@ -5,6 +5,7 @@ import sendResponse from '../../../utils/sendResponse';
 import { propertyService } from './property.service';
 import { access_productService } from '../../access_product/access_products.service';
 import { uploadManyToS3 } from '../../../utils/s3';
+import { productService } from '../../products/products.service';
 
 const addPropertySell = catchAsync(async (req, res) => {
 
@@ -48,6 +49,9 @@ const addPropertySell = catchAsync(async (req, res) => {
     req.body.location = { type: "Point", coordinates: [req.body.long, req.body.lat] };
 
     const result = await propertyService.addPropertySell(req.body)
+
+    // ------------send notification----------------
+    productService.sendNotificationAfterAddProduct(req.user._id, result?._id);
 
     sendResponse(res, {
         statusCode: httpStatus.OK,
@@ -98,7 +102,10 @@ const addPropertyRent = catchAsync(async (req, res) => {
 
     req.body.location = { type: "Point", coordinates: [req.body.long, req.body.lat] }
 
-    const result = await propertyService.addPropertyRent(req.body)
+    const result = await propertyService.addPropertyRent(req.body);
+
+    // ------------send notification----------------
+    productService.sendNotificationAfterAddProduct(req.user._id, result?._id);
 
     sendResponse(res, {
         statusCode: httpStatus.OK,

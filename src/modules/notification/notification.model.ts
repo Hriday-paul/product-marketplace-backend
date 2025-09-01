@@ -25,10 +25,16 @@ const NotificationSchema = new Schema<INotification>(
       enum: ["user", "admin"],
       required: true,
     },
+    product: {
+      type: Schema.Types.ObjectId,
+      ref: "products",
+      default : null
+    },
 
     type: {
       type: String,
-      default: null,
+      default: "text",
+
     },
 
     title: {

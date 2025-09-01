@@ -7,6 +7,12 @@ import sendResponse from '../../utils/sendResponse';
 
 const createSearch = catchAsync(async (req: Request, res: Response) => {
 
+    const req_loc = req?.body?.location
+
+    const location = (req_loc) ? { type: "Point", coordinates: [req_loc?.long || 0, req_loc?.lat || 0] } : null;
+
+    req.body.location = location
+
     const result = await searchServices.addnewSearches(req?.user?._id, req.body);
 
     sendResponse(res, {

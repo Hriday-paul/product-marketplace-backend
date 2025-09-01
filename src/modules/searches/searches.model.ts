@@ -7,9 +7,21 @@ const searcheSchema = new Schema<ISearches>(
             type: String,
             default: null,
         },
+        // location: {
+        //     type: { lat: Number, long: Number },
+        //     default: null
+        // },
         location: {
-            type: { lat: Number, long: Number },
-            default: null
+            type: {
+                type: String,
+                enum: ['Point'],
+                // required: true,
+                default: 'Point',
+            },
+            coordinates: {
+                type: [Number], // [longitude, latitude]
+                // required: true,
+            },
         },
         category: {
             type: String,
@@ -32,6 +44,8 @@ const searcheSchema = new Schema<ISearches>(
         timestamps: true,
     },
 );
+
+searcheSchema.index({ location: '2dsphere' });
 
 const Search = model<ISearches, ISearchesModel>('searches', searcheSchema);
 

@@ -3,7 +3,7 @@ import { INotification } from "./notification.inerface";
 import Notification from "./notification.model";
 
 const getNotificationFromDb = async (query: Record<string, any>) => {
-  const result = await Notification.find({ isRead: false }).sort("-createdAt");
+  const result = await Notification.find({ isRead: false }).sort("-createdAt").populate('product');
   return result;
 };
 

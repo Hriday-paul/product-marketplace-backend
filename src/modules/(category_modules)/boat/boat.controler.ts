@@ -53,7 +53,7 @@ const addBoat = catchAsync(async (req, res) => {
     const result = await boatService.addBoat(req.body, req.user._id);
 
     // ------------send notification----------------
-    await productService.sendNotificationAfterAddProduct(req.user._id)
+    productService.sendNotificationAfterAddProduct(req.user._id, result?._id)
 
     sendResponse(res, {
         statusCode: httpStatus.OK,

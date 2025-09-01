@@ -55,7 +55,7 @@ const addCar = catchAsync(async (req, res) => {
     const result = await carService.addCar(req.body);
 
     // ------------send notification----------------
-    await productService.sendNotificationAfterAddProduct(req.user._id)
+    productService.sendNotificationAfterAddProduct(req.user._id, result?._id)
 
     sendResponse(res, {
         statusCode: httpStatus.OK,
@@ -112,7 +112,7 @@ const addCaravan = catchAsync(async (req, res) => {
     const result = await carService.addCaravan(req.body);
 
     // ------------send notification----------------
-    await productService.sendNotificationAfterAddProduct(req.user._id)
+    productService.sendNotificationAfterAddProduct(req.user._id, result?._id)
 
     sendResponse(res, {
         statusCode: httpStatus.OK,
@@ -169,7 +169,7 @@ const addBobil = catchAsync(async (req, res) => {
     const result = await carService.addBobil(req.body);
 
     // ------------send notification----------------
-    await productService.sendNotificationAfterAddProduct(req.user._id)
+    productService.sendNotificationAfterAddProduct(req.user._id, result?._id)
 
     sendResponse(res, {
         statusCode: httpStatus.OK,

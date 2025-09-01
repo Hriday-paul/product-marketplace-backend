@@ -107,7 +107,7 @@ const loginUser = async (payload: { email: string, password: string, fcmToken?: 
                 receiver: updatedUser._id,
                 receiverEmail: payload.email,
                 receiverRole: updatedUser.role,
-                sender: updatedUser._id
+                sender: updatedUser._id,
             });
         }
 

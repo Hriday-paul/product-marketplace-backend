@@ -1,10 +1,13 @@
+import { Types } from "mongoose";
 import AppError from "../../error/AppError";
-import { sendNotification } from "../notification/notification.utils";
+import { sendMultipleNotification, sendNotification } from "../notification/notification.utils";
+import Search from "../searches/searches.model";
 import { User } from "../user/user.models";
 import { IProduct } from "./products.interface";
 import { Products } from "./products.model";
 import httpStatus from 'http-status'
 import { ObjectId } from "mongodb"
+import { INotification } from "../notification/notification.inerface";
 
 const allProducts = async (query: Record<string, any>) => {
     const page = parseInt(query?.page) || 1;
@@ -637,7 +640,7 @@ const deleteProduct = async (productId: string, userId: string) => {
     return res;
 };
 
-const sendNotificationAfterAddProduct = async (userId: string) => {
+const sendNotificationAfterAddProduct = async (userId: string, productId: ObjectId) => {
 
     const user = await User.findById(userId);
 
@@ -652,17 +655,76 @@ const sendNotificationAfterAddProduct = async (userId: string) => {
     const tokenToUse = user?.fcmToken;
 
     // Send notification if FCM token exists and user notification is unabled
+    // for product owner
     if (tokenToUse && user?.notification) {
         sendNotification([tokenToUse], {
-            title: `Product added successfully`,
-            message: `New product added successfully`,
+            title: `Listing added successfully`,
+            message: `New Listing added successfully`,
             receiver: user._id,
             receiverEmail: user.email,
             receiverRole: user.role,
             sender: user._id,
-            type: "product"
+            type: "text"
         });
     }
+
+    // for match search
+
+    const product = await Products.findOne({ _id: new Types.ObjectId(productId) });
+
+    if (!product) return;
+
+    const filters: any = {
+        $and: [
+            { $or: [{ category: product.category }, { category: null }, { category: { $exists: false } }] },
+            { $or: [{ condition: product.condition }, { condition: null }, { condition: { $exists: false } }] },
+            { $or: [{ "price.min": { $lte: product.price } }, { price: null }, { "price.min": { $exists: false } }] },
+            { $or: [{ "price.max": { $gte: product.price } }, { price: null }, { "price.max": { $exists: false } }] },
+            // { $or: [{ search: { $regex: product.title, $options: "i" } }, { search: { $exists: false } }, { search: null }] },
+            {
+                $or: [
+                    {
+                        location: {
+                            $geoWithin: {
+                                $centerSphere: [
+                                    product.location.coordinates,
+                                    50 / 6378.1 // Convert 50km to radians (Earth radius ~6378.1 km)
+                                ]
+                            }
+                        }
+                    },
+                    { location: null },
+                    { location: { $exists: false } }
+                ]
+            }
+        ]
+    };
+
+    const matchingSearches = await Search.find(filters).populate({ path: "user", select: "-password" });
+
+    const tokens = [];
+    const notifications: INotification[] = []
+
+    for (const search of matchingSearches) {
+
+        search?.user?.fcmToken && tokens.push(search?.user?.fcmToken);
+
+        notifications.push({
+            title: `New Listing Launched`,
+            message: `New listing found based on your saved search`,
+            receiver: search?.user?._id,
+            receiverEmail: search?.user?.email,
+            receiverRole: search?.user?.role,
+            sender: userId as any,
+            type: "product",
+            product: product?._id,
+        })
+
+    }
+
+    sendMultipleNotification(tokens, notifications, { title: "New Listing Launched", message: "New listing found based on your saved search" });
+
+    return null;
 }
 
 export const productService = {

@@ -96,6 +96,16 @@ const deleteProduct = catchAsync(async (req, res) => {
     });
 });
 
+const sendNotificationAfterAddProduct = catchAsync(async (req, res) => {
+    const result = await productService.sendNotificationAfterAddProduct(req.user._id, req.body.product);
+    sendResponse(res, {
+        statusCode: 200,
+        success: true,
+        message: 'Product alert successfully',
+        data: result,
+    });
+});
+
 export const productControler = {
     allProducts,
     myProducts,
@@ -104,5 +114,6 @@ export const productControler = {
     deleteProduct,
     relatedProducts,
     singleProduct,
-    topViewsProduct
+    topViewsProduct,
+    sendNotificationAfterAddProduct
 }

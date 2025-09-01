@@ -52,7 +52,7 @@ const addOtherProduct = catchAsync(async (req, res) => {
     const result = await othersProductService.addOtherProduct(req.body);
 
     // ------------send notification----------------
-    await productService.sendNotificationAfterAddProduct(req.user._id);
+    productService.sendNotificationAfterAddProduct(req.user._id, result?._id);
 
     sendResponse(res, {
         statusCode: httpStatus.OK,

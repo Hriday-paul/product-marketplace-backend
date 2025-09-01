@@ -5,7 +5,7 @@ import { User } from "../user/user.models";
 
 export interface IAdminSendNotificationPayload {
   sender: ObjectId;
-  type?: "hireRequest" | "accept" | "reject" | "cancelled" | "payment";
+  type?: "text" | "accept" | "reject" | "cancelled" | "payment";
   title: string;
   message: string;
   link?: string;
