@@ -1,13 +1,15 @@
 import { model, Schema } from 'mongoose';
-import { IAccess_product } from './access_products.interface';
+import { IAccess_product, IPurchasePack } from './access_products.interface';
 
-
-const Access_Add_Product_Schema = new Schema<IAccess_product>(
+const Package_Schema = new Schema<IPurchasePack>(
     {
-        user: {
+        last_purchase_package: {
             type: Schema.Types.ObjectId,
-            ref: "users",
+            ref: "packages"
         },
+
+        category: { type: String, required: true, enum: ["propertie_sell", "propertie_rent", "car", "boat", "motorcycle", "bicycle", "job", "book", "furniture", "electronic", "cloth", "caravan", "bobil"] },
+
         product_limit: {
             type: Number,
             default: 0
@@ -16,14 +18,21 @@ const Access_Add_Product_Schema = new Schema<IAccess_product>(
             type: Number,
             default: 0
         },
-        last_purchase_package: {
-            type: Schema.Types.ObjectId,
-            ref: "packages"
-        },
         expiredAt: {
             type: Date,
-            default : new Date()
+            default: new Date()
         }
+    }
+)
+
+
+const Access_Add_Product_Schema = new Schema<IAccess_product>(
+    {
+        user: {
+            type: Schema.Types.ObjectId,
+            ref: "users",
+        },
+        purchasePackages: { type: [Package_Schema] }
     },
     {
         timestamps: true,

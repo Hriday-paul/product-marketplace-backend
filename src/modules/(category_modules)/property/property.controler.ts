@@ -14,7 +14,7 @@ const addPropertySell = catchAsync(async (req, res) => {
     let filePaths: string[] = [];
 
     // ---------------check access to add product-----------
-    await access_productService.checkAccess(req.user._id)
+    await access_productService.checkAccess(req.user._id, "propertie_sell")
 
     if (files) {
         const imgsArray: { file: any; path: string; key?: string }[] = [];
@@ -68,7 +68,7 @@ const addPropertyRent = catchAsync(async (req, res) => {
     let filePaths: string[] = [];
 
     // ---------------check access to add product-----------
-    await access_productService.checkAccess(req.user._id)
+    await access_productService.checkAccess(req.user._id, "propertie_rent")
 
     if (files) {
         const imgsArray: { file: any; path: string; key?: string }[] = [];

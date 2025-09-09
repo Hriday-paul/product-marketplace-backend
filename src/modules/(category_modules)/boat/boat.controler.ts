@@ -1,4 +1,3 @@
-import config from "../../../config";
 import catchAsync from "../../../utils/catchAsync";
 import sendResponse from "../../../utils/sendResponse";
 import httpStatus from 'http-status';
@@ -15,7 +14,7 @@ const addBoat = catchAsync(async (req, res) => {
     let filePaths: string[] = [];
 
     // ---------------check access to add product-----------
-    await access_productService.checkAccess(req.user._id);
+    await access_productService.checkAccess(req.user._id, "boat");
 
     if (files) {
         const imgsArray: { file: any; path: string; key?: string }[] = [];

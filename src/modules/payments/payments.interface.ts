@@ -1,12 +1,13 @@
 import { Model, ObjectId } from 'mongoose';
 import { IUser } from '../user/user.interface';
+import { IPackage } from '../package/package.interface';
 
 
 
 export interface IPayment {
   _id?: ObjectId;
   user: ObjectId | IUser;
-  package: ObjectId;
+  package: IPackage;
   total_amount: number;
   product_limit : number;
   tranId: string;

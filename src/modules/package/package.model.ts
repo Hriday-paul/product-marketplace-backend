@@ -8,6 +8,9 @@ const PackageSchema = new Schema<IPackage>(
         title: { type: String },
         price: { type: Number, required: true, min: 0 },
         product_limit: { type: Number, required: true, min: 0 },
+        
+        category: { type: String, required: true, enum: ["propertie_sell", "propertie_rent", "car", "boat", "motorcycle", "bicycle", "job", "book", "furniture", "electronic", "cloth", "caravan", "bobil"] },
+
         duration_day: {
             type: Number,
             required: true,
@@ -16,7 +19,7 @@ const PackageSchema = new Schema<IPackage>(
         isDeleted: { type: Boolean, default: false },
     },
     {
-        _id : true,
+        _id: true,
         timestamps: true,
     },
 );

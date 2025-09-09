@@ -4,17 +4,20 @@ import Access_Products from "./access_products.model";
 
 
 const checkAccess = async (
-    userId: string
+    userId: string,
+    category: "propertie_sell" | "propertie_rent" | "car" | "boat" | "motorcycle" | "bicycle" | "job" | "book" | "furniture" | "electronic" | "cloth" | "caravan" | "bobil"
 ): Promise<boolean> => {
 
-    const userAccess = await Access_Products.findOne({ user: userId });
+    const access = await Access_Products.findOne({ user: userId, "purchasePackages.category": category });
 
-    if (!userAccess) {
+    if (!access) {
         throw new AppError(
             httpStatus.NOT_FOUND,
             'You have not any boasting plan',
         );
     }
+
+    const userAccess = access?.purchasePackages?.find(p => p?.category == category)!;
 
     if (userAccess?.expiredAt && (new Date(userAccess?.expiredAt) >= new Date())) {
         if (userAccess?.product_limit > userAccess?.added_product) {
@@ -28,7 +31,7 @@ const checkAccess = async (
     } else {
         throw new AppError(
             httpStatus.FORBIDDEN,
-           'Your boasting plan expired',
+            'Your boasting plan expired',
         );
     }
 

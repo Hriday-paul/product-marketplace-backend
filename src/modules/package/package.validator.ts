@@ -6,6 +6,8 @@ export const addPackageValidator = [
     check('product_limit').trim().escape().not().isEmpty().withMessage('product limit is required').isFloat().withMessage('invalid product_limit format'),
     check('duration_day').trim().escape().not().isEmpty().withMessage('duration day is required').isFloat().withMessage('invalid duration format'),
     check('price').trim().escape().not().isEmpty().withMessage('price is required').isNumeric().withMessage('invalid price format'),
+
+    query("category").trim().not().isEmpty().isString().isIn(["propertie_sell", "propertie_rent", "car", "boat", "motorcycle", "bicycle", "job", "book", "furniture", "electronic", "cloth", "caravan", "bobil"]).withMessage("invalid category"),
 ]
 
 export const updatePackageValidator = [

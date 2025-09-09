@@ -92,7 +92,7 @@ const confirmPayment = async (query: Record<string, any>) => {
       paymentId,
       { isPaid: true, paymentIntentId: paymentIntentId },
       { new: true, session },
-    ).populate('user')
+    ).populate('user').populate('package')
 
     if (!payment) {
       throw new AppError(httpStatus.NOT_FOUND, 'Payment Not Found!');
@@ -105,7 +105,7 @@ const confirmPayment = async (query: Record<string, any>) => {
       throw new AppError(httpStatus.NOT_FOUND, 'User Not Found!');
     }
 
-    const existAccessProduct = await Access_Products.findOne({ user: user?._id });
+    const existAccessProduct = await Access_Products.findOne({ user: user?._id, "purchasePackages.category": payment?.package?.category });
 
 
     let product_limit = 0
@@ -114,28 +114,60 @@ const confirmPayment = async (query: Record<string, any>) => {
     const currentDate = new Date();
 
     if (existAccessProduct) {
-      const isNotExpired = new Date(existAccessProduct.expiredAt) >= currentDate;
+
+      const pack = existAccessProduct?.purchasePackages?.find(p => p?.category == payment?.package?.category)!;
+
+      const isNotExpired = new Date(pack.expiredAt) >= currentDate;
 
       product_limit = isNotExpired
-        ? existAccessProduct.product_limit + payment?.product_limit
+        ? pack.product_limit + payment?.product_limit
         : payment?.product_limit;
 
       new_expired = isNotExpired
         ? new Date(
-          new Date(existAccessProduct.expiredAt).getTime() +
+          new Date(pack.expiredAt).getTime() +
           (payment?.expiredAt ? new Date(payment.expiredAt).getTime() - currentDate.getTime() : 0)
         )
         : payment?.expiredAt ? new Date(payment.expiredAt) : currentDate;
 
-      added_product = isNotExpired ? existAccessProduct.added_product : 0;
+      added_product = isNotExpired ? pack.added_product : 0;
+
+      await Access_Products.updateOne(
+        { user: user._id },
+        {
+          $set: {
+            [`purchasePackages.$[${payment?.package?.category}].product_limit`]: product_limit,
+            [`purchasePackages.$[${payment?.package?.category}].expiredAt`]: new_expired,
+            [`purchasePackages.$[${payment?.package?.category}].last_purchase_package`]: payment?.package,
+            [`purchasePackages.$[${payment?.package?.category}].added_product`]: added_product,
+          },
+        },
+        { session }
+      );
 
     } else {
+
       product_limit = payment?.product_limit;
       new_expired = payment?.expiredAt ? new Date(payment.expiredAt) : new Date();
       added_product = 0;
-    }
 
-    const access_product = await Access_Products.updateOne({ user: user._id }, { product_limit: product_limit, expiredAt: new_expired, last_purchase_package: payment?.package, user: user?._id, added_product }, { upsert: true, session });
+      Access_Products.updateOne(
+        { user: user._id },
+        {
+          $push: {
+            purchasePackages: {
+              product_limit,
+              expiredAt: new_expired,
+              last_purchase_package: payment?.package,
+              added_product,
+              category: payment?.package?.category,
+            },
+          },
+        },
+        { upsert: true, session }
+      )
+
+    }
 
     await session.commitTransaction();
     return payment;
@@ -162,7 +194,7 @@ const confirmPayment = async (query: Record<string, any>) => {
 
 
 const getAllPayments = async (query: Record<string, any>) => {
-  const paymentModel = new QueryBuilder(Payment.find({ isPaid: true }).populate({ path: "user", select: "-password -fcmToken" }).populate({path : "package"}), query)
+  const paymentModel = new QueryBuilder(Payment.find({ isPaid: true }).populate({ path: "user", select: "-password -fcmToken" }).populate({ path: "package" }), query)
     .search(['name', 'email', 'contact'])
     .filter()
     .paginate()

@@ -6,5 +6,6 @@ export interface IPackage {
     product_limit: number,
     duration_day: number
     price: number;
-    isDeleted ?: boolean
+    isDeleted ?: boolean;
+    category : "propertie_sell" | "propertie_rent" | "car" | "boat" | "motorcycle" | "bicycle" | "job" | "book" | "furniture" | "electronic" | "cloth" | "caravan" | "bobil"
 }

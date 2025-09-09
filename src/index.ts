@@ -20,6 +20,7 @@ app.use(cors({
   origin: ["https://sellx.no", "https://www.sellx.no"],
   credentials: true
 }));
+
 app.use(express.json({ limit: '500mb' }));
 app.use(express.urlencoded({ limit: '500mb', extended: true }));
 app.use(cookieParser());

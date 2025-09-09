@@ -15,7 +15,7 @@ const addMotorcycle = catchAsync(async (req, res) => {
     let filePaths: string[] = [];
 
     // ---------------check access to add product-----------
-    await access_productService.checkAccess(req.user._id)
+    await access_productService.checkAccess(req.user._id, "motorcycle")
 
     if (files) {
         const imgsArray: { file: any; path: string; key?: string }[] = [];

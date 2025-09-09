@@ -16,7 +16,7 @@ const addCar = catchAsync(async (req, res) => {
     let filePaths: string[] = [];
 
     // ---------------check access to add product-----------
-    await access_productService.checkAccess(req.user._id)
+    await access_productService.checkAccess(req.user._id, "car")
 
     if (files) {
         const imgsArray: { file: any; path: string; key?: string }[] = [];
@@ -73,7 +73,7 @@ const addCaravan = catchAsync(async (req, res) => {
     let filePaths: string[] = [];
 
     // ---------------check access to add product-----------
-    await access_productService.checkAccess(req.user._id)
+    await access_productService.checkAccess(req.user._id, "caravan")
 
     if (files) {
         const imgsArray: { file: any; path: string; key?: string }[] = [];
@@ -130,7 +130,7 @@ const addBobil = catchAsync(async (req, res) => {
     let filePaths: string[] = [];
 
     // ---------------check access to add product-----------
-    await access_productService.checkAccess(req.user._id)
+    await access_productService.checkAccess(req.user._id, "bobil")
 
     if (files) {
         const imgsArray: { file: any; path: string; key?: string }[] = [];
