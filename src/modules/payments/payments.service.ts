@@ -136,13 +136,16 @@ const confirmPayment = async (query: Record<string, any>) => {
         { user: user._id },
         {
           $set: {
-            [`purchasePackages.$[${payment?.package?.category}].product_limit`]: product_limit,
-            [`purchasePackages.$[${payment?.package?.category}].expiredAt`]: new_expired,
-            [`purchasePackages.$[${payment?.package?.category}].last_purchase_package`]: payment?.package,
-            [`purchasePackages.$[${payment?.package?.category}].added_product`]: added_product,
+            "purchasePackages.$[elem].product_limit": product_limit,
+            "purchasePackages.$[elem].expiredAt": new_expired,
+            "purchasePackages.$[elem].last_purchase_package": payment?.package,
+            "purchasePackages.$[elem].added_product": added_product,
           },
         },
-        { session }
+        {
+          arrayFilters: [{ "elem.category": payment?.package?.category }],
+          session,
+        }
       );
 
     } else {
@@ -151,7 +154,7 @@ const confirmPayment = async (query: Record<string, any>) => {
       new_expired = payment?.expiredAt ? new Date(payment.expiredAt) : new Date();
       added_product = 0;
 
-      Access_Products.updateOne(
+      const res = await Access_Products.updateOne(
         { user: user._id },
         {
           $push: {
