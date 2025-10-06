@@ -1,5 +1,5 @@
 # Ecommerce app Backend (Sellx)
-=======
+
 # Setup -- TypeScript x Express x Node.js
 
 ## Prerequisites

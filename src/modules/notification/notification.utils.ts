@@ -3,6 +3,7 @@ import httpStatus from "http-status";
 import AppError from "../../error/AppError";
 import { INotification } from "./notification.inerface";
 import Notification from "./notification.model";
+import config from "../../config";
 
 // Initialize Firebase Admin SDK only if not already initialized
 if (!admin.apps.length) {
@@ -15,7 +16,25 @@ export const sendNotification = async (
   fcmToken: string[],
   payload: INotification
 ): Promise<unknown> => {
+
   try {
+
+    Notification.create({
+      sender: payload?.sender,
+      receiver: payload?.receiver,
+      receiverEmail: payload?.receiverEmail,
+      receiverRole: payload?.receiverRole,
+      title: payload.title,
+      link: payload?.link || null,
+      message: payload?.message,
+      type: payload?.type || "accept",
+    })
+
+    if (fcmToken.length <= 0) {
+      return;
+    }
+
+
     const response = await admin.messaging().sendEachForMulticast({
       tokens: fcmToken,
       notification: {
@@ -24,8 +43,8 @@ export const sendNotification = async (
       },
       android: {
         notification: {
-          icon: "http://10.10.10.9:3000/logo.png",
-          imageUrl: "http://10.10.10.9:3000/logo.png",
+          icon: config.BASE_URL + '/logo.png',
+          imageUrl: config.BASE_URL + '/logo.png',
           clickAction: 'notification'
         }
       },
@@ -34,7 +53,7 @@ export const sendNotification = async (
           "apns-push-type": "alert",
         },
         fcmOptions: {
-          imageUrl: 'http://10.10.10.9:3000/logo.png'
+          imageUrl: config.BASE_URL + '/logo.png'
         },
         payload: {
           aps: {
@@ -45,28 +64,10 @@ export const sendNotification = async (
       },
       webpush: {
         headers: {
-          image: 'http://10.10.10.9:3000/logo.png'
+          image: config.BASE_URL + '/logo.png'
         }
       },
     });
-
-    // If notifications were successfully sent, log them in the database
-    if (response?.successCount > 0) {
-      await Promise.all(
-        fcmToken.map((token) =>
-          Notification.create({
-            sender: payload?.sender,
-            receiver: payload?.receiver,
-            receiverEmail: payload?.receiverEmail,
-            receiverRole: payload?.receiverRole,
-            title: payload.title,
-            link: payload?.link || null,
-            message: payload?.message,
-            type: payload?.type || "accept",
-          })
-        )
-      );
-    }
 
     // Log any individual token failures
     if (response?.failureCount > 0) {
@@ -74,7 +75,7 @@ export const sendNotification = async (
         if (!res.success) {
           console.error(
             `FCM error for token at index ${index}: ${JSON.stringify(
-              res.error
+              res?.error
             )}`
           );
         }
@@ -86,7 +87,7 @@ export const sendNotification = async (
 
     // Handle specific Firebase third-party auth error
     if (error?.code === "messaging/third-party-auth-error") {
-      console.warn("FCM auth error:", error.message);
+      console.error("FCM auth error:", error.message);
       return null;
     }
 
@@ -108,11 +109,11 @@ export const sendMultipleNotification = async (
 ): Promise<unknown> => {
   try {
 
+
+    await Notification.insertMany(payload)
+
     if (fcmToken.length <= 0) {
-      throw new AppError(
-        httpStatus.NOT_FOUND,
-        "Token not sent"
-      );
+      return;
     }
 
     const response = await admin.messaging().sendEachForMulticast({
@@ -123,8 +124,8 @@ export const sendMultipleNotification = async (
       },
       android: {
         notification: {
-          icon: "http://10.10.10.9:3000/logo.png",
-          imageUrl: "http://10.10.10.9:3000/logo.png",
+          icon: config.BASE_URL + '/logo.png',
+          imageUrl: config.BASE_URL + '/logo.png',
           clickAction: 'notification'
         }
       },
@@ -133,7 +134,7 @@ export const sendMultipleNotification = async (
           "apns-push-type": "alert",
         },
         fcmOptions: {
-          imageUrl: 'http://10.10.10.9:3000/logo.png'
+          imageUrl: config.BASE_URL + '/logo.png'
         },
         payload: {
           aps: {
@@ -144,16 +145,11 @@ export const sendMultipleNotification = async (
       },
       webpush: {
         headers: {
-          image: 'http://10.10.10.9:3000/logo.png'
+          image: config.BASE_URL + '/logo.png'
         }
       },
     });
 
-    // If notifications were successfully sent, log them in the database
-    if (response?.successCount > 0) {
-      await Notification.insertMany(payload)
-
-    }
 
     // Log any individual token failures
     if (response?.failureCount > 0) {

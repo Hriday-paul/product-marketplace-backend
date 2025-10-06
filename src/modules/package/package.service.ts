@@ -43,8 +43,9 @@ const delete_Package = async (id: string) => {
 }
 
 // get all packeges and filter by plan type
-const getPackages_by_type = async () => {
-    const query = { isDeleted: false };
+const getPackages_by_type = async (category ?: string) => {
+    const query = category ? { isDeleted: false, category } : {isDeleted: false};
+
     const packages = await Package.find(query);
     return packages;
 }

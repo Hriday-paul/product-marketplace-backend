@@ -14,7 +14,7 @@ const createPackage = catchAsync(async (req: Request, res: Response) => {
 })
 
 const updatePackage = catchAsync(async (req: Request, res: Response) => {
-    
+
     const result = await packageService.update_Package(req.body, req.params.id)
     sendResponse(res, {
         statusCode: 200,
@@ -26,7 +26,7 @@ const updatePackage = catchAsync(async (req: Request, res: Response) => {
 
 
 const deletePackage = catchAsync(async (req: Request, res: Response) => {
-    
+
     const result = await packageService.delete_Package(req.params.id)
     sendResponse(res, {
         statusCode: 200,
@@ -36,9 +36,9 @@ const deletePackage = catchAsync(async (req: Request, res: Response) => {
     });
 })
 
-const getPackages_by_type = catchAsync(async (req, res: Response) => {
+const getPackages_by_type = catchAsync(async (req: Request<{}, {}, {}, { category?: string }>, res: Response) => {
 
-    const result = await packageService.getPackages_by_type()
+    const result = await packageService.getPackages_by_type(req.query?.category)
 
     sendResponse(res, {
         statusCode: 200,

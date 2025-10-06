@@ -144,6 +144,15 @@ const paymentAmount = catchAsync(async (req: Request, res: Response) => {
   });
 });
 
+const cancelPayment = catchAsync(async (req: Request, res: Response) => {
+  sendResponse(res, {
+    success: false,
+    statusCode: httpStatus.BAD_REQUEST,
+    data: null,
+    message: 'payment cancelled',
+  });
+});
+
 export const paymentsController = {
   getAllPayments,
   getPaymentsById,
@@ -153,5 +162,6 @@ export const paymentsController = {
   getPaymentsByUserId,
   getPaymentsByUserIdWithParams,
   checkout,
-  paymentAmount
+  paymentAmount,
+  cancelPayment
 };

@@ -37,7 +37,7 @@ export const createCheckoutSession = async (payload: IPayload) => {
 
     success_url: `${config.SERVER_URL}/payments/confirm-payment?sessionId={CHECKOUT_SESSION_ID}&paymentId=${payload?.paymentId}`,
 
-    cancel_url: `${config?.client_Url}${config?.cancel_url}`,
+    cancel_url: `${config?.BASE_URL}/api${config?.cancel_url}`,
 
     // `${config.server_url}/payments/cancel?paymentId=${payload?.paymentId}`,
     mode: 'payment',

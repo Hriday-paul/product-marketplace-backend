@@ -12,7 +12,7 @@ const checkAccess = async (
 
     if (!access) {
         throw new AppError(
-            httpStatus.NOT_FOUND,
+            httpStatus.PAYMENT_REQUIRED,
             'You have not any boasting plan',
         );
     }
@@ -24,13 +24,13 @@ const checkAccess = async (
             return true
         } else {
             throw new AppError(
-                httpStatus.FORBIDDEN,
+                httpStatus.UNPROCESSABLE_ENTITY,
                 'Your product add limit expired',
             );
         }
     } else {
         throw new AppError(
-            httpStatus.FORBIDDEN,
+            httpStatus.UNPROCESSABLE_ENTITY,
             'Your boasting plan expired',
         );
     }

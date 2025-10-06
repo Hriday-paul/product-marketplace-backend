@@ -4,6 +4,7 @@ import { USER_ROLE } from '../user/user.constants';
 import auth from '../../middleware/auth';
 import { checkoutValidator } from './payments.validation';
 import req_validator from '../../middleware/req_validation';
+import path from 'path';
 
 const router = Router();
 
@@ -25,6 +26,13 @@ router.get(
 
 router.get('/confirm-payment', paymentsController.confirmPayment);
 
+router.get('/cancel-payment', (req, res) => {
+  const rootDir = path.resolve(__dirname, "../../../")
+  res.sendFile(path.join(rootDir, "public", "payment_cancel.html"));
+});
+
+router.get('/', auth(USER_ROLE.admin), paymentsController.getAllPayments);
+
 router.patch('/:id', auth(USER_ROLE.admin), paymentsController.updatePayments);
 
 router.delete('/:id', auth(USER_ROLE.admin), paymentsController.deletePayments);
@@ -35,7 +43,7 @@ router.get(
   paymentsController.getPaymentsById,
 );
 
-router.get('/', auth(USER_ROLE.admin), paymentsController.getAllPayments);
+
 
 
 export const paymentsRoutes = router;
