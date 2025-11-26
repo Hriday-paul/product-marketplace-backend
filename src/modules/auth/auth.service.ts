@@ -100,16 +100,16 @@ const loginUser = async (payload: { email: string, password: string, fcmToken?: 
         const tokenToUse = payload.fcmToken || user?.fcmToken;
 
         // Send notification if FCM token exists and user notification is unabled
-        if (tokenToUse && user.notification) {
-            sendNotification([tokenToUse], {
-                title: `Login successfully`,
-                message: `New user login to your account`,
-                receiver: updatedUser._id,
-                receiverEmail: payload.email,
-                receiverRole: updatedUser.role,
-                sender: updatedUser._id,
-            });
-        }
+
+        sendNotification(tokenToUse ? [tokenToUse] : [], {
+            title: `Login successfully`,
+            message: `New user login to your account`,
+            receiver: updatedUser._id,
+            receiverEmail: payload.email,
+            receiverRole: updatedUser.role,
+            sender: updatedUser._id,
+        }, user.notification);
+
 
         sendAdminNotifications({
             sender: user._id,

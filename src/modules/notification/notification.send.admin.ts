@@ -30,6 +30,6 @@ export const sendAdminNotifications = async (
       message: payload.message,
       type: payload.type as any,
       link: payload.link,
-    });
+    }, true);
   }
 };

@@ -3,7 +3,7 @@ import { INotification } from "./notification.inerface";
 import Notification from "./notification.model";
 
 const getNotificationFromDb = async (query: Record<string, any>) => {
-  const result = await Notification.find({ isRead: false }).sort("-createdAt").populate('product');
+  const result = await Notification.find(query).sort("-createdAt").populate('product');
   return result;
 };
 
@@ -39,9 +39,25 @@ const makeReadAll = async (user: string) => {
   return result;
 };
 
+const deleteNotification = async (id: string, user: string) => {
+  const result = await Notification.deleteOne(
+    { _id: id, receiver: user }
+  );
+  return result;
+};
+
+const dltAllNotification = async (user: string) => {
+  const result = await Notification.deleteMany(
+    { receiver: user },
+  );
+  return result;
+};
+
 export const notificationServices = {
   getNotificationFromDb,
   updateNotification,
   makeMeRead,
-  makeReadAll
+  makeReadAll,
+  deleteNotification,
+  dltAllNotification
 };

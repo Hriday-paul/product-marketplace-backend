@@ -23,4 +23,15 @@ router.put(
   notificationController.makeReadAll
 );
 
+router.delete(
+  "/all",
+  auth(USER_ROLE.user, USER_ROLE.admin),
+  notificationController.dltAllNotification
+);
+router.delete(
+  "/:id",
+  auth(USER_ROLE.user, USER_ROLE.admin),
+  notificationController.deleteNotification
+);
+
 export const notificationRoute = router;

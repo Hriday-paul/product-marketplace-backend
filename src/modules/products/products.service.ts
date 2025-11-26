@@ -656,8 +656,8 @@ const sendNotificationAfterAddProduct = async (userId: string, productId: Object
 
     // Send notification if FCM token exists and user notification is unabled
     // for product owner
-    if (tokenToUse && user?.notification) {
-        sendNotification([tokenToUse], {
+ 
+        sendNotification(tokenToUse ? [tokenToUse] : [], {
             title: `Listing added successfully`,
             message: `New Listing added successfully`,
             receiver: user._id,
@@ -665,8 +665,8 @@ const sendNotificationAfterAddProduct = async (userId: string, productId: Object
             receiverRole: user.role,
             sender: user._id,
             type: "text"
-        });
-    }
+        }, user.notification);
+    
 
     // for match search
 
@@ -707,7 +707,7 @@ const sendNotificationAfterAddProduct = async (userId: string, productId: Object
 
     for (const search of matchingSearches) {
 
-        search?.user?.fcmToken && tokens.push(search?.user?.fcmToken);
+        (search?.user?.fcmToken && search?.user.notification) && tokens.push(search?.user?.fcmToken);
 
         notifications.push({
             title: `New Listing Launched`,

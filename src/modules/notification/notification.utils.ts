@@ -14,7 +14,8 @@ if (!admin.apps.length) {
 
 export const sendNotification = async (
   fcmToken: string[],
-  payload: INotification
+  payload: INotification,
+  notification: boolean
 ): Promise<unknown> => {
 
   try {
@@ -30,7 +31,7 @@ export const sendNotification = async (
       type: payload?.type || "accept",
     })
 
-    if (fcmToken.length <= 0) {
+    if (fcmToken.length <= 0 || !notification) {
       return;
     }
 
