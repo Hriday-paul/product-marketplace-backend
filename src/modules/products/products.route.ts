@@ -29,7 +29,7 @@ router.get('/related/:id', productControler.relatedProducts);
 router.patch(
     '/:id',
     auth(USER_ROLE.user),
-    multiple_image_Upload,
+    multiple_image_Upload.array('images'),
     parseData(),
     productControler.updateProduct,
 );

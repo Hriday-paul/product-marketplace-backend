@@ -1,7 +1,3 @@
-/* eslint-disable prefer-const */
-/* eslint-disable @typescript-eslint/no-unused-vars */
-/* eslint-disable @typescript-eslint/no-explicit-any */
-// socketIO.js
 import { Server as HttpServer } from 'http';
 import { Server } from 'socket.io';
 import httpStatus from 'http-status';
@@ -46,7 +42,7 @@ const initializeSocketIO = (server: HttpServer) => {
       const user: any = await User.findOneAndUpdate({ _id: decode.userId }, { isOnline: true }, { new: true }).select('-password');
 
       if (!user) {
-        io.emit('io-error', { success: false, message: 'invalid Token' });
+        socket.emit('io-error', { success: false, message: 'invalid Token' });
         throw new AppError(httpStatus.UNAUTHORIZED, 'Invalid token');
       }
 
@@ -74,7 +70,7 @@ const initializeSocketIO = (server: HttpServer) => {
               success: false,
               message: 'userId is required',
             });
-            io.emit('io-error', {
+            socket.emit('io-error', {
               success: false,
               message: 'userId id is required',
             });
@@ -89,7 +85,7 @@ const initializeSocketIO = (server: HttpServer) => {
               success: false,
               message: 'user is not found!',
             });
-            io.emit('io-error', {
+            socket.emit('io-error', {
               success: false,
               message: 'user is not found!',
             });
@@ -134,7 +130,7 @@ const initializeSocketIO = (server: HttpServer) => {
             success: false,
             message: error.message,
           });
-          io.emit('io-error', { success: false, message: error });
+          socket.emit('io-error', { success: false, message: error });
           console.error('Error in message-page event:', error);
         }
       });
@@ -153,7 +149,7 @@ const initializeSocketIO = (server: HttpServer) => {
             success: false,
             message: error.message,
           });
-          io.emit('io-error', { success: false, message: error.message });
+          socket.emit('io-error', { success: false, message: error.message });
         }
       });
 
@@ -168,7 +164,7 @@ const initializeSocketIO = (server: HttpServer) => {
               success: false,
               message: 'chatId id is required',
             });
-            io.emit('io-error', {
+            socket.emit('io-error', {
               success: false,
               message: 'chatId id is required',
             });
@@ -180,7 +176,7 @@ const initializeSocketIO = (server: HttpServer) => {
               success: false,
               message: 'chat id is not valid',
             });
-            io.emit('io-error', {
+            socket.emit('io-error', {
               success: false,
               message: 'chat id is not valid',
             });
@@ -259,99 +255,109 @@ const initializeSocketIO = (server: HttpServer) => {
 
       socket.on('send-message', async (req_payload, callback) => {
 
-        let payload;
+        try {
+          let payload;
 
-        // validate payload
-        if (typeof req_payload === 'string') {
-          try {
-            payload = JSON.parse(req_payload);
-          } catch {
+          // validate payload
+          if (typeof req_payload === 'string') {
+            try {
+              payload = JSON.parse(req_payload);
+            } catch {
+              return callbackFn(callback, {
+                statusCode: 400,
+                success: false,
+                message: 'Invalid JSON payload',
+              });
+            }
+          } else if (typeof req_payload === 'object' && req_payload !== null) {
+            payload = req_payload;
+          } else {
             return callbackFn(callback, {
               statusCode: 400,
               success: false,
-              message: 'Invalid JSON payload',
+              message: 'Payload must be an object',
             });
           }
-        } else if (typeof req_payload === 'object' && req_payload !== null) {
-          payload = req_payload;
-        } else {
-          return callbackFn(callback, {
-            statusCode: 400,
-            success: false,
-            message: 'Payload must be an object',
+
+          payload.sender = user?._id;
+
+          const alreadyExists = await Chat.findOne({
+            participants: { $all: [payload.sender, payload.receiver] },
+          }).populate(['participants']);
+
+          if (!alreadyExists) {
+            const chatList = await Chat.create({
+              participants: [payload.sender, payload.receiver],
+            });
+
+            payload.chat = chatList?._id;
+          } else {
+            payload.chat = alreadyExists?._id;
+          }
+
+          console.log("==============chatId==============", payload.chat);
+
+          const result = await Message.create(payload);
+
+          if (!result) {
+            callbackFn(callback, {
+              statusCode: httpStatus.BAD_REQUEST,
+              success: false,
+              message: 'Message sent failed',
+            });
+          }
+
+          const senderMessage = 'new-message::' + payload.receiver.toString();
+
+          io.emit(senderMessage, result);
+
+          // //----------------------ChatList------------------------//
+          const ChatListSender = await chatService.getMyChatList(
+            result?.sender.toString(),
+          );
+
+          const senderChat = 'chat-list::' + result.sender.toString();
+          io.emit(senderChat, ChatListSender);
+
+          const ChatListReceiver = await chatService.getMyChatList(
+            result?.receiver.toString(),
+          );
+
+          const receiverChat = 'chat-list::' + result.receiver.toString();
+
+          io.emit(receiverChat, ChatListReceiver);
+
+          // Notification
+          const allUnReaddMessage = await Message.countDocuments({
+            receiver: result.sender,
+            seen: false,
           });
-        }
 
-        payload.sender = user?._id;
-
-        const alreadyExists = await Chat.findOne({
-          participants: { $all: [payload.sender, payload.receiver] },
-        }).populate(['participants']);
-
-        if (!alreadyExists) {
-          const chatList = await Chat.create({
-            participants: [payload.sender, payload.receiver],
+          const variable = 'new-notifications::' + result.sender;
+          io.emit(variable, allUnReaddMessage);
+          const allUnReaddMessage2 = await Message.countDocuments({
+            receiver: result.receiver,
+            seen: false,
           });
 
-          payload.chat = chatList?._id;
-        } else {
-          payload.chat = alreadyExists?._id;
-        }
+          const variable2 = 'new-notifications::' + result.receiver;
+          io.emit(variable2, allUnReaddMessage2);
 
-        console.log("==============chatId==============", payload.chat);
-
-        const result = await Message.create(payload);
-
-        if (!result) {
+          //end Notification//
           callbackFn(callback, {
-            statusCode: httpStatus.BAD_REQUEST,
-            success: false,
-            message: 'Message sent failed',
+            statusCode: httpStatus.OK,
+            success: true,
+            message: 'Message sent successfully!',
+            data: result,
           });
+        } catch (error: any) {
+          callbackFn(callback, {
+            success: false,
+            message: error.message,
+          });
+          console.error('Error in seen event:', error);
+          // socket.emit('error', { message: error.message });
         }
-
-        const senderMessage = 'new-message::' + payload.receiver.toString();
-
-        io.emit(senderMessage, result);
-
-        // //----------------------ChatList------------------------//
-        const ChatListSender = await chatService.getMyChatList(
-          result?.sender.toString(),
-        );
-        const senderChat = 'chat-list::' + result.sender.toString();
-        io.emit(senderChat, ChatListSender);
-
-        const ChatListReceiver = await chatService.getMyChatList(
-          result?.receiver.toString(),
-        );
-
-        const receiverChat = 'chat-list::' + result.receiver.toString();
-
-        io.emit(receiverChat, ChatListReceiver);
-
-        // Notification
-        const allUnReaddMessage = await Message.countDocuments({
-          receiver: result.sender,
-          seen: false,
-        });
-
-        const variable = 'new-notifications::' + result.sender;
-        io.emit(variable, allUnReaddMessage);
-        const allUnReaddMessage2 = await Message.countDocuments({
-          receiver: result.receiver,
-          seen: false,
-        });
-
-        const variable2 = 'new-notifications::' + result.receiver;
-        io.emit(variable2, allUnReaddMessage2);
-
-        //end Notification//
-        callbackFn(callback, {
-          statusCode: httpStatus.OK,
-          success: true,
-          message: 'Message sent successfully!',
-          data: result,
-        });
       });
 
       //-----------------------Typing------------------------//
@@ -360,6 +366,18 @@ const initializeSocketIO = (server: HttpServer) => {
         try {
 
           const { receiver } = payload
+
+          if (!payload?.receiver) {
+            callbackFn(callback, {
+              success: false,
+              message: 'receiver is required',
+            });
+            socket.emit('io-error', {
+              success: false,
+              message: 'receiver id is required',
+            });
+            return;
+          }
 
           const chat = 'typing::' + receiver.toString();
           const message = user?.first_name + ' is typing...';
@@ -379,6 +397,18 @@ const initializeSocketIO = (server: HttpServer) => {
       socket.on('stopTyping', function (payload, callback) {
         try {
           const { receiver } = payload;
+
+          if (!payload?.receiver) {
+            callbackFn(callback, {
+              success: false,
+              message: 'receiver is required',
+            });
+            socket.emit('io-error', {
+              success: false,
+              message: 'receiver id is required',
+            });
+            return;
+          }
 
           const chat = 'stopTyping::' + receiver.toString();
           const message = user?.first_name + ' is stop typing...';
@@ -425,7 +455,7 @@ const initializeSocketIO = (server: HttpServer) => {
 
         console.log('disconnect user ', socket.id);
       });
-      
+
     } catch (error) {
       console.error('-- socket.io connection error --', error);
       socket.emit('error', { message: "connection error" })

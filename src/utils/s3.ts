@@ -52,7 +52,6 @@ export const deleteFromS3 = async (key: string) => {
 };
 
 // upload multiple files
-
 export const uploadManyToS3 = async (
   files: {
     // eslint-disable-next-line @typescript-eslint/no-explicit-any
@@ -79,7 +78,12 @@ export const uploadManyToS3 = async (
 
       // const url = `https://${config.aws.bucket}.s3.${config.aws.region}.amazonaws.com/${fileKey}`;
       const url = `https://${config.aws.bucket}.${config.aws.spacesEndpoint}/${fileKey}`;
-      return { url, key: newFileName };
+
+      const mimeType = file.mimetype;
+
+      const isImage = mimeType.startsWith("image/");
+
+      return { url, key: newFileName, type : isImage ? "image" : "document" };
     });
 
     const uploadedUrls = await Promise.all(uploadPromises);

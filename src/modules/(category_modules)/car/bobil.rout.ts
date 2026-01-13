@@ -11,7 +11,7 @@ const router = Router();
 
 router.post("/",
     auth(USER_ROLE.user),
-    multiple_image_Upload,
+    multiple_image_Upload.array('images'),
     parseData(),
     addCaravanValidator,
     req_validator(),

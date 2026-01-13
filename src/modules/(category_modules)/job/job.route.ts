@@ -23,12 +23,12 @@ export const multiple_image_Upload = multer({
         // }
         cb(null, true)
     },
-}).array('images');
+});
 
 
 router.post("/",
     auth(USER_ROLE.user),
-    multiple_image_Upload,
+    multiple_image_Upload.array('images'),
     parseData(),
     addJobValidator,
     req_validator(),

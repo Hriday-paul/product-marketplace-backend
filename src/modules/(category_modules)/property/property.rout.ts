@@ -11,7 +11,7 @@ const router = Router();
 
 router.post("/sell",
     auth(USER_ROLE.user),
-    multiple_image_Upload,
+    multiple_image_Upload.array('images'),
     parseData(),
     addPropertySellValidator,
     req_validator(),
@@ -19,7 +19,7 @@ router.post("/sell",
 
 router.post("/rent",
     auth(USER_ROLE.user),
-    multiple_image_Upload,
+    multiple_image_Upload.array('images'),
     parseData(),
     addPropertyRentValidator,
     req_validator(),

@@ -1,7 +1,8 @@
 import { createServer, Server } from 'http';
 import app from '.';
 import config from './config';
-import initializeSocketIO from './socket';
+import initializeSocketIO from './socket/socket';
+// import initializeSocketIO from './socket';
 
 let server: Server;
 export const io = initializeSocketIO(createServer(app));

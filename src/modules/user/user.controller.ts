@@ -7,6 +7,7 @@ import httpStatus from 'http-status'
 import { IstoreProfile } from "./user.models";
 import config from "../../config";
 import { uploadToS3 } from "../../utils/s3";
+import AppError from "../../error/AppError";
 
 //get all users
 const all_users = catchAsync(async (req: Request, res: Response) => {

@@ -3,8 +3,10 @@ import { messagesController } from './messages.controller';
 import { sendMessageValidator } from './messages.validation';
 import parseData from '../../middleware/parseData';
 import auth from '../../middleware/auth';
-import { USER_ROLE } from '../user/user.constants'; 
+import { USER_ROLE } from '../user/user.constants';
 import req_validator from '../../middleware/req_validation';
+import { image_Upload } from '../user/user.rout';
+import { multiple_image_Upload } from '../(category_modules)/job/job.route';
 
 const router = Router();
 // const storage = memoryStorage();
@@ -53,6 +55,13 @@ router.get(
   '/',
   auth(USER_ROLE.user, USER_ROLE.admin),
   messagesController.getAllMessages,
+);
+
+router.post(
+  '/upload',
+  auth(USER_ROLE.admin, USER_ROLE.user),
+  multiple_image_Upload.array('files'),
+  messagesController.uploadFile,
 );
 
 export const messagesRoutes = router;

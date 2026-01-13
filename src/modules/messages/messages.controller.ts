@@ -10,6 +10,7 @@ import { chatService } from '../chat/chat.service';
 import Chat from '../chat/chat.models';
 import { IChat } from '../chat/chat.interface';
 import { io } from '../../server';
+import { uploadManyToS3, uploadToS3 } from '../../utils/s3';
 
 const createMessages = catchAsync(async (req: Request, res: Response) => {
   const id = `${Math.floor(100000 + Math.random() * 900000)}${Date.now()}`;
@@ -122,6 +123,36 @@ const deleteMessages = catchAsync(async (req: Request, res: Response) => {
   });
 });
 
+const uploadFile = catchAsync(async (req, res) => {
+  const files = req.files as Express.Multer.File[];
+
+  let filePaths: string[] = [];
+
+  if (files?.length <= 0) {
+    throw new AppError(httpStatus.BAD_REQUEST, "Minimum 1 file is required")
+  }
+
+  const imgsArray: { file: any; path: string; key?: string }[] = [];
+
+  files?.map(image => {
+    imgsArray.push({
+      file: image,
+      path: `images/messages`,
+    });
+  });
+
+  const urls = await uploadManyToS3(imgsArray);
+  filePaths = urls?.map(i => i?.url);
+
+
+  sendResponse(res, {
+    statusCode: 200,
+    success: true,
+    message: 'Files uploaded successfully',
+    data: urls,
+  });
+})
+
 export const messagesController = {
   createMessages,
   getAllMessages,
@@ -130,4 +161,5 @@ export const messagesController = {
   updateMessages,
   deleteMessages,
   seenMessage,
+  uploadFile,
 };

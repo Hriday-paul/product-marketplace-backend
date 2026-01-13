@@ -14,6 +14,7 @@ import { notificationRoute } from './modules/notification/notification.routes';
 import { packageRouts } from './modules/package/package.rout';
 import { favouriteRouts } from './modules/favourites/favourites.rout';
 import { searchRouts } from './modules/searches/searches.rout';
+import { messagesRoutes } from './modules/messages/messages.route';
 
 
 const router = express.Router();
@@ -74,7 +75,11 @@ const moduleRoutes = [
     {
         path: '/searches',
         route: searchRouts,
-    }
+    },
+    {
+        path: '/messages',
+        route: messagesRoutes,
+    },
 ];
 
 moduleRoutes.forEach(route => router.use(route.path, route.route));
