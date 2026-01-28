@@ -180,6 +180,18 @@ const userDetails = catchAsync(async (req, res) => {
     });
 })
 
+const allStores = catchAsync(async (req, res) => {
+
+    const result = await userService.allStores(req.query);
+
+    sendResponse(res, {
+        statusCode: httpStatus.OK,
+        success: true,
+        message: 'Stores Retrived successfully',
+        data: result,
+    });
+})
+
 
 export const userController = {
     updateProfile,
@@ -190,5 +202,6 @@ export const userController = {
     all_users,
     deletemyAccount,
     deleteUser,
-    userDetails
+    userDetails,
+    allStores
 }

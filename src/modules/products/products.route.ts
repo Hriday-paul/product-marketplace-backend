@@ -21,6 +21,9 @@ router.get('/', productQueryChecker, req_validator(), productControler.allProduc
 router.get('/top-viewed', productQueryChecker, req_validator(), productControler.topViewsProduct);
 
 router.get('/my-products', auth(USER_ROLE.user), productQueryChecker, req_validator(), productControler.myProducts);
+
+router.get('/store/:id', productQueryChecker, req_validator(), productControler.storeProducts);
+
 router.get('/near-me', auth(USER_ROLE.user), productControler.nearMeProducts);
 
 router.get('/:id', auth(USER_ROLE.user, USER_ROLE.admin), productControler.singleProduct);

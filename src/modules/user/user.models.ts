@@ -145,6 +145,7 @@ const userSchema: Schema<IUser> = new Schema(
     store_profile: {
       type: storeSchema,
       required: false,
+      default : null
     }
   },
   {

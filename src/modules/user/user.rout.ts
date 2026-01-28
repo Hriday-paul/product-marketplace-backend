@@ -91,6 +91,12 @@ router.get(
 );
 
 router.get(
+    '/stores',
+    auth(USER_ROLE.admin, USER_ROLE.user),
+    userController.allStores,
+);
+
+router.get(
     '/:id',
     auth(USER_ROLE.admin, USER_ROLE.user),
     userController.userDetails,

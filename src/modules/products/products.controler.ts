@@ -26,6 +26,17 @@ const myProducts = catchAsync(async (req, res) => {
     });
 })
 
+const storeProducts = catchAsync(async (req, res) => {
+    const query = req.query
+    const result = await productService.myProducts(query, req.params.id)
+    sendResponse(res, {
+        statusCode: httpStatus.OK,
+        success: true,
+        message: 'Store products retrived successfully',
+        data: result,
+    });
+})
+
 const topViewsProduct = catchAsync(async (req, res) => {
     const result = await productService.topViewsProduct()
     sendResponse(res, {
@@ -109,6 +120,7 @@ const sendNotificationAfterAddProduct = catchAsync(async (req, res) => {
 export const productControler = {
     allProducts,
     myProducts,
+    storeProducts,
     nearMeProducts,
     updateProduct,
     deleteProduct,

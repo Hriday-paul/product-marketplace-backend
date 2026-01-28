@@ -14,4 +14,6 @@ router.get('/by-product/:id', reviewsParamValidator, req_validator(), reviewCont
 
 router.get('/my-product-reviews', auth(USER_ROLE.user), reviewControler.myProductsreviews);
 
+router.get('/store/:id', reviewControler.storeProductsReviews);
+
 export const reviewRoutes = router;

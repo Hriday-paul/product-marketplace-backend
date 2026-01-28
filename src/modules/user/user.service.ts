@@ -124,9 +124,26 @@ const deletemyAccount = async (userId: string) => {
     return res;
 }
 
-const userDetails = async(userId : string)=>{
+const userDetails = async (userId: string) => {
     const res = await User.findById(userId).select("-password -fcmToken -verification");
     return res;
+}
+
+const allStores = async (query: Record<string, any>) => {
+
+    const userModel = new QueryBuilder(User.find({
+        store_profile: { $exists: true, $ne: null },
+        "store_profile.name": { $exists: true, $ne: "" },
+    }, { store_profile : 1 }), query)
+        .search(['store_profile.name', 'store_profile.email', 'store_profile.contact', 'store_profile.address'])
+        .paginate()
+
+    const data: any = await userModel.modelQuery;
+    const meta = await userModel.countTotal();
+    return {
+        data,
+        meta,
+    };
 }
 
 export const userService = {
@@ -137,5 +154,6 @@ export const userService = {
     allUsers,
     status_update_user,
     deletemyAccount,
-    userDetails
+    userDetails,
+    allStores
 }

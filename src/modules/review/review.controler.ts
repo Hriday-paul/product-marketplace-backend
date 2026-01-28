@@ -36,8 +36,19 @@ const myProductsreviews = catchAsync(async (req, res) => {
     });
 })
 
+const storeProductsReviews = catchAsync(async (req, res) => {
+    const result = await reviewService.myProductsreviews(req.params?.id)
+    sendResponse(res, {
+        statusCode: httpStatus.OK,
+        success: true,
+        message: 'Store Reviews retrive successfully',
+        data: result,
+    });
+})
+
 export const reviewControler = {
     addReview,
     reviewsByProduct,
-    myProductsreviews
+    myProductsreviews,
+    storeProductsReviews
 }

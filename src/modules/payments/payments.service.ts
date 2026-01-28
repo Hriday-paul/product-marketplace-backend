@@ -173,6 +173,9 @@ const confirmPayment = async (query: Record<string, any>) => {
     }
 
     await session.commitTransaction();
+
+    delete (payment as any).user;
+
     return payment;
 
   } catch (error: any) {
