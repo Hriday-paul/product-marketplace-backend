@@ -11,8 +11,11 @@ import { IUser } from '../user/user.interface';
 import generateRandomString from '../../utils/generateRandomString';
 import { IPackage } from '../package/package.interface';
 import Package from '../package/package.model';
-import Access_Products from '../access_product/access_products.model';
 import QueryBuilder from '../../builder/QueryBuilder';
+import moment from 'moment';
+import { Products } from '../products/products.model';
+import { productService } from '../products/products.service';
+import { ObjectId } from "mongodb";
 
 
 const stripe = new Stripe(config.stripe?.stripe_api_secret as string, {
@@ -29,11 +32,12 @@ const checkout = async (packageId: string, userId: string) => {
   )
 
   if (!foundPackage) {
-    throw new AppError(httpStatus.NOT_FOUND, 'Boasting Package Not Found!');
+    throw new AppError(httpStatus.NOT_FOUND, 'Package Not Found!');
   }
 
   const startedAt = Date.now();
-  const expiredAt = Date.now() + foundPackage.duration_day * 24 * 60 * 60 * 1000
+  const seventhDayUTC = moment(Date.now()).add(7, "days").utc().format();
+  const expiredAt = foundPackage?.type == "premium" ? seventhDayUTC : Date.now();
 
   interface INewPayment extends IPayment {
     user: IUser // after population, user will be an object, not just an ID
@@ -44,7 +48,7 @@ const checkout = async (packageId: string, userId: string) => {
       isPaid: false,
       user: userId,
     },
-    { user: userId, tranId, total_amount: foundPackage?.price, product_limit: foundPackage?.product_limit, expiredAt, startedAt, package: foundPackage?._id, isPaid: false },
+    { user: userId, tranId, total_amount: foundPackage?.price, expiredAt, startedAt, package: foundPackage?._id, isPaid: false },
     { new: true, upsert: true },
   ).populate("user") as INewPayment;
 
@@ -105,76 +109,20 @@ const confirmPayment = async (query: Record<string, any>) => {
       throw new AppError(httpStatus.NOT_FOUND, 'User Not Found!');
     }
 
-    const existAccessProduct = await Access_Products.findOne({ user: user?._id, "purchasePackages.category": payment?.package?.category });
-
-
-    let product_limit = 0
-    let new_expired
-    let added_product = 0
-    const currentDate = new Date();
-
-    if (existAccessProduct) {
-
-      const pack = existAccessProduct?.purchasePackages?.find(p => p?.category == payment?.package?.category)!;
-
-      const isNotExpired = new Date(pack.expiredAt) >= currentDate;
-
-      product_limit = isNotExpired
-        ? pack.product_limit + payment?.product_limit
-        : payment?.product_limit;
-
-      new_expired = isNotExpired
-        ? new Date(
-          new Date(pack.expiredAt).getTime() +
-          (payment?.expiredAt ? new Date(payment.expiredAt).getTime() - currentDate.getTime() : 0)
-        )
-        : payment?.expiredAt ? new Date(payment.expiredAt) : currentDate;
-
-      added_product = isNotExpired ? pack.added_product : 0;
-
-      await Access_Products.updateOne(
-        { user: user._id },
-        {
-          $set: {
-            "purchasePackages.$[elem].product_limit": product_limit,
-            "purchasePackages.$[elem].expiredAt": new_expired,
-            "purchasePackages.$[elem].last_purchase_package": payment?.package,
-            "purchasePackages.$[elem].added_product": added_product,
-          },
-        },
-        {
-          arrayFilters: [{ "elem.category": payment?.package?.category }],
-          session,
-        }
-      );
-
-    } else {
-
-      product_limit = payment?.product_limit;
-      new_expired = payment?.expiredAt ? new Date(payment.expiredAt) : new Date();
-      added_product = 0;
-
-      const res = await Access_Products.updateOne(
-        { user: user._id },
-        {
-          $push: {
-            purchasePackages: {
-              product_limit,
-              expiredAt: new_expired,
-              last_purchase_package: payment?.package,
-              added_product,
-              category: payment?.package?.category,
-            },
-          },
-        },
-        { upsert: true, session }
-      )
-
-    }
+    // update product as premium
+    await Products.updateOne({ _id: payment?.product }, {
+      isPaid: true,
+      isPremium: payment?.package?.type == "premium" ? true : false,
+      boostActivatedAt: payment?.startedAt,
+      boostExpiresAt: payment?.expiredAt
+    }).session(session);
 
     await session.commitTransaction();
 
     delete (payment as any).user;
+
+    // ------------send notification----------------
+    productService.sendNotificationAfterAddProduct(user?._id as unknown as string, payment?.product as unknown as ObjectId)
 
     return payment;
 

@@ -1,8 +1,10 @@
-import { IJob } from "./job.interface";
+import { IProduct } from "../../products/products.interface";
 import { Job } from "./job.model";
 
 
-const addJob = async (payload: IJob) => {
+const addJob = async (body: IProduct) => {
+
+    const { isPremium, boostActivatedAt, boostExpiresAt, createdAt, updatedAt, isDeleted, isPaid, ...payload } = body;
 
     const res = await Job.create(payload)
 

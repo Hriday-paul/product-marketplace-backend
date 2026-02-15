@@ -100,7 +100,7 @@ const countData = async () => {
 
     const totalAmount = totalEarning.length > 0 ? totalEarning[0].totalAmount : 0;
 
-    const totalProducts = await Products.countDocuments({isDeleted : false});
+    const totalProducts = await Products.countDocuments({isDeleted : false, isPaid : true});
 
     return { totalEarnings: totalAmount.toFixed(2), totalUsers: totalUsers.toFixed(), totalProducts }
 }

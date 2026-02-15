@@ -12,9 +12,20 @@ export interface IProduct {
     stock: number,
     details: string,
     location : {type : string, coordinates : number[]}
-    isBoosted ?: boolean,
+    
     isDeleted ?: boolean,
     user ?: ObjectId,
     total_views : number
+
+    isPaid : boolean,
+    
+    // Premium fields
+    isPremium: boolean;
+    boostExpiresAt?: Date | null;
+    boostActivatedAt?: Date | null;
+
+    createdAt : Date,
+    updatedAt : Date
+
     // otherDetails?: ObjectId,
 }

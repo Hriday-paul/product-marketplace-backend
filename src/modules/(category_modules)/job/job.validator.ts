@@ -1,6 +1,8 @@
 import { body } from "express-validator";
 
 export const addJobValidator = [
+  body('package').trim().not().isEmpty().withMessage('package is required').isMongoId().withMessage("Invalid package"),
+  
   body('title').trim().not().isEmpty().withMessage('title is required').isString(),
 
   // body('category').trim().not().isEmpty().withMessage('category is required').isString().isIn(["propertie", "car", "boat", "motorcycle", "bicycle", "job", "book", "furniture", "electronic", "cloth"]).withMessage("invalid category"),
@@ -9,8 +11,6 @@ export const addJobValidator = [
 
   body('lat').trim().escape().not().isEmpty().withMessage('lat is required').isNumeric().withMessage("Invalid lat type"),
   body('long').trim().escape().not().isEmpty().withMessage('long is required').isNumeric().withMessage("Invalid long type"),
-
-
 
 
   body("headline")

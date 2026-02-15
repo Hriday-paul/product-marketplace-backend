@@ -7,7 +7,7 @@ import httpStatus from 'http-status'
 const addReview = async (payload: IReview, reviewer: string) => {
 
     //check product is available or not ?
-    const machedProduct = await Products.findOne({ _id: payload?.product })
+    const machedProduct = await Products.findOne({ _id: payload?.product, isPaid : true, isDeleted  :false })
 
     if (!machedProduct) {
         throw new AppError(

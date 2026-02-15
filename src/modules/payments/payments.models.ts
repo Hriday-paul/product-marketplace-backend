@@ -14,12 +14,12 @@ const PaymentSchema = new Schema<IPayment>(
       ref: 'packages',
       required: true,
     },
-    total_amount: {
-      type: Number,
+    product: {
+      type: Schema.Types.ObjectId,
+      ref: 'products',
       required: true,
-      min: 0,
     },
-    product_limit: {
+    total_amount: {
       type: Number,
       required: true,
       min: 0,

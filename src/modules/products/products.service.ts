@@ -14,18 +14,24 @@ const allProducts = async (query: Record<string, any>) => {
     const limit = parseInt(query?.limit) || 10;
     const skip = (page - 1) * limit;
 
+    const q_sort = query?.sort;
     const search = query?.searchTerm || "";
     const category = query?.category || null;
     const condition = query?.condition || null;
 
-    const lat = query?.lat || null;
-    const long = query?.long || null;
+    const lat = query?.lat ? parseFloat(query.lat) : null;
+    const long = query?.long ? parseFloat(query.long) : null;
+    const distance = query?.distance ? parseFloat(query.distance) : 10;
 
-
+    /* ---------------- FILTERS ---------------- */
     const filters: any = {
-        title: { $regex: search, $options: "i" },
         isDeleted: false,
+        isPaid: true
     };
+
+    if (search) {
+        filters.title = { $regex: search, $options: "i" };
+    }
 
     if (category) filters.category = category;
     if (condition) filters.condition = condition;
@@ -41,48 +47,41 @@ const allProducts = async (query: Record<string, any>) => {
         filters.price = { $lte: Number(query.max) };
     }
 
+    /* ---------------- SORT ---------------- */
+    const sort: any = { isPremium: -1 };
 
+    if (q_sort === "priceAsc") sort.price = 1;
+    else if (q_sort === "priceDsc") sort.price = -1;
+    else if (q_sort === "createdAtAsc") sort.createdAt = 1;
+    else if (q_sort === "closestAsc" && lat && long) sort.distance = 1;
+    else if (q_sort === "closestDsc" && lat && long) sort.distance = -1;
+
+    else sort.createdAt = -1;
+
+
+    /* ---------------- PIPELINE ---------------- */
+    const pipeline: any[] = [];
+
+    // ✅ CLOSEST (geo sorting)
     if (lat && long) {
-        filters.location = {
-            $geoWithin: {
-                $centerSphere: [
-                    [parseFloat(long), parseFloat(lat)], // [lng, lat]
-                    10000 / 6378.1 // 10km / Earth's radius (km) = radians
-                ],
+        pipeline.push({
+            $geoNear: {
+                near: {
+                    type: "Point",
+                    coordinates: [long, lat],
+                },
+                distanceField: "distance", // meters
+                maxDistance: (distance ?? 10) * 1000, // 10km
+                spherical: true,
+                query: filters,
             },
-        };
+        });
+    } else {
+        pipeline.push({ $match: filters });
     }
 
-
-    const products = await Products.aggregate([
-        // 1. Match by filters
-        { $match: filters },
-
-        // 2. Lookup reviews
-        // {
-        //     $lookup: {
-        //         from: "reviews",
-        //         localField: "_id",
-        //         foreignField: "product",
-        //         as: "reviews"
-        //     }
-        // },
-
-        // 3. Add avgRating and reviewCount directly from "reviews"
-        // {
-        //     $addFields: {
-        //         avgRating: {
-        //             $cond: [
-        //                 { $gt: [{ $size: "$reviews" }, 0] },
-        //                 { $avg: "$reviews.rating" },
-        //                 0
-        //             ]
-        //         },
-        //         reviewCount: { $size: "$reviews" }
-        //     }
-        // },
-
-        // 2. Lookup aggregated review data
+    // 🔍 Review aggregation
+    pipeline.push(
         {
             $lookup: {
                 from: "reviews",
@@ -93,77 +92,58 @@ const allProducts = async (query: Record<string, any>) => {
                             $expr: {
                                 $and: [
                                     { $eq: ["$product", "$$productId"] },
-                                    { $eq: ["$isDeleted", false] }
-                                ]
-                            }
-                        }
+                                    { $eq: ["$isDeleted", false] },
+                                ],
+                            },
+                        },
                     },
                     {
                         $group: {
                             _id: null,
                             avgRating: { $avg: "$rating" },
-                            reviewCount: { $sum: 1 }
-                        }
-                    }
+                            reviewCount: { $sum: 1 },
+                        },
+                    },
                 ],
-                as: "reviewStats"
-            }
+                as: "reviewStats",
+            },
         },
-
-        // 3. Add avgRating and reviewCount safely
         {
             $addFields: {
                 avgRating: {
-                    $ifNull: [{ $arrayElemAt: ["$reviewStats.avgRating", 0] }, 0]
+                    $ifNull: [{ $arrayElemAt: ["$reviewStats.avgRating", 0] }, 0],
                 },
                 reviewCount: {
-                    $ifNull: [{ $arrayElemAt: ["$reviewStats.reviewCount", 0] }, 0]
-                }
-            }
-        },
+                    $ifNull: [{ $arrayElemAt: ["$reviewStats.reviewCount", 0] }, 0],
+                },
+            },
+        }
+    );
 
-        // 4. Pagination
+    // ✅ Pagination (correct order)
+    pipeline.push(
+        { $sort: sort },
         { $skip: skip },
-        { $limit: limit },
-        { $sort: { isBoosted: -1 } },
+        { $limit: limit }
+    );
 
-        // 5. Optional projection
-        // {
-        //   $project: {
-        //     name: 1,
-        //     price: 1,
-        //     category: 1,
-        //     avgRating: 1,
-        //     reviewCount: 1,
-        //     reviews: 1,
-        //     image: 1
-        //   }
-        // },
-
-        // {
-        //     $lookup: {
-        //         from: "users",
-        //         localField: "user",
-        //         foreignField: "_id",
-        //         as: "user",
-        //     },
-        // },
-        // { $unwind: { path: "$user", preserveNullAndEmptyArrays: true } },
-    ]);
+    /* ---------------- QUERY ---------------- */
+    const products = await Products.aggregate(pipeline);
 
     const total = await Products.countDocuments(filters);
-
     const totalPage = Math.ceil(total / limit);
 
-    const meta = {
-        page,
-        limit,
-        total,
-        totalPage,
+    return {
+        data: products,
+        meta: {
+            page,
+            limit,
+            total,
+            totalPage,
+        },
     };
+};
 
-    return { data: products, meta }
-}
 
 const myProducts = async (query: Record<string, any>, userId: string) => {
 
@@ -181,6 +161,7 @@ const myProducts = async (query: Record<string, any>, userId: string) => {
     if (category) filters.category = category;
     if (condition) filters.condition = condition;
     filters.isDeleted = false;
+    filters.isPaid = true;
 
     filters.user = new ObjectId(userId);
 
@@ -255,7 +236,7 @@ const myProducts = async (query: Record<string, any>, userId: string) => {
         // 4. Pagination
         { $skip: skip },
         { $limit: limit },
-        { $sort: { isBoosted: -1 } },
+        { $sort: { createdAt: -1 } },
 
         // 5. Optional projection
         // {
@@ -297,7 +278,7 @@ const myProducts = async (query: Record<string, any>, userId: string) => {
 
 const topViewsProduct = async () => {
 
-    const res = await Products.find({ isDeleted: false }).sort({ total_views: -1 }).limit(10).select('_id title images price sellingPrice details category condition');
+    const res = await Products.find({ isDeleted: false, isPaid: true }).sort({ isPremium: -1, total_views: -1 }).limit(10).select('_id title images price sellingPrice details category condition');
 
     return res;
 
@@ -309,7 +290,7 @@ const singleProduct = async (productId: string, userId: string) => {
 
     const product = await Products.aggregate([
 
-        { $match: { _id: new ObjectId(productId), isDeleted: false } },
+        { $match: { _id: new ObjectId(productId), isDeleted: false, isPaid: true } },
 
         {
             $lookup: {
@@ -425,13 +406,13 @@ const relatedProducts = async (productId: string) => {
     if (!product) {
         throw new AppError(
             httpStatus.NOT_FOUND,
-            'Main Product not found',
+            'Main Listing not found',
         );
     }
 
     const products = await Products.aggregate([
         // 1. Match by filters
-        { $match: { category: product?.category, isDeleted: false, _id: { $ne: product._id } } },
+        { $match: { category: product?.category, isDeleted: false, isPaid: true, _id: { $ne: product._id } } },
 
         {
             $lookup: {
@@ -472,7 +453,7 @@ const relatedProducts = async (productId: string) => {
             }
         },
         // { $limit: limit },
-        { $sort: { isBoosted: -1 } },
+        { $sort: { isPremium: -1, createdAt: -1 } },
     ]);
 
     return products;
@@ -503,7 +484,12 @@ const nearMeProducts = async (userId: string) => {
                 query: { isDeleted: false }
             }
         },
-
+        {
+            $match: {
+                isDeleted: false,
+                isPaid: true
+            }
+        },
         {
             $lookup: {
                 from: "reviews",
@@ -544,7 +530,7 @@ const nearMeProducts = async (userId: string) => {
         },
 
         // { $limit: 20 },
-        { $sort: { isBoosted: -1 } },
+        { $sort: { isPremium: -1, createdAt: -1 } },
     ]);
 
     return products;
@@ -556,7 +542,9 @@ interface upPRod extends IProduct {
     long?: number;
 }
 
-const updateProduct = async (payload: upPRod, productId: string, newImages: string[]) => {
+const updateProduct = async (body: upPRod, productId: string, newImages: string[]) => {
+
+    const { isPremium, boostActivatedAt, boostExpiresAt, createdAt, updatedAt, isDeleted, user, isPaid, ...payload } = body;
 
     if (Object.keys(payload).length === 0) {
         throw new AppError(httpStatus.BAD_REQUEST, 'No valid fields to update');
@@ -567,15 +555,17 @@ const updateProduct = async (payload: upPRod, productId: string, newImages: stri
         throw new AppError(httpStatus.NOT_FOUND, 'Product not found');
     }
 
+    // check item is paid and isdeleted
+    if (!isExist?.isPaid || isExist?.isDeleted) {
+        throw new AppError(httpStatus.CONFLICT, 'Item unavailble for update');
+    }
+
     // Build updated images array
     const existingImages = payload.existImages || [];
     payload.images = [...existingImages, ...newImages];
 
     // Remove existImages from payload to avoid saving unknown fields
     delete payload?.existImages;
-    delete payload?.isBoosted;
-    delete payload?.isDeleted;
-    delete payload?.user;
 
 
     if (typeof payload.lat === 'number' || typeof payload.long === 'number') {
@@ -594,8 +584,6 @@ const updateProduct = async (payload: upPRod, productId: string, newImages: stri
         delete payload.lat;
         delete payload.long;
     }
-
-
 
 
     // Update the product
@@ -627,6 +615,10 @@ const deleteProduct = async (productId: string, userId: string) => {
         );
     }
 
+    if (!isExist?.isPaid || isExist?.isDeleted) {
+        throw new AppError(httpStatus.CONFLICT, 'Item unavailble for update');
+    }
+
     //check is owner
     if (isExist?.user?.toString() !== userId) {
         throw new AppError(
@@ -656,21 +648,21 @@ const sendNotificationAfterAddProduct = async (userId: string, productId: Object
 
     // Send notification if FCM token exists and user notification is unabled
     // for product owner
- 
-        sendNotification(tokenToUse ? [tokenToUse] : [], {
-            title: `Listing added successfully`,
-            message: `New Listing added successfully`,
-            receiver: user._id,
-            receiverEmail: user.email,
-            receiverRole: user.role,
-            sender: user._id,
-            type: "text"
-        }, user.notification);
-    
+
+    sendNotification(tokenToUse ? [tokenToUse] : [], {
+        title: `Listing added successfully`,
+        message: `New Listing added successfully`,
+        receiver: user._id,
+        receiverEmail: user.email,
+        receiverRole: user.role,
+        sender: user._id,
+        type: "text"
+    }, user.notification);
+
 
     // for match search
 
-    const product = await Products.findOne({ _id: new Types.ObjectId(productId) });
+    const product = await Products.findOne({ _id: new Types.ObjectId(productId), isDeleted: false, isPaid: true });
 
     if (!product) return;
 

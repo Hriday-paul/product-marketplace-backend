@@ -3,7 +3,6 @@ import catchAsync from '../../utils/catchAsync';
 import { paymentsService } from './payments.service';
 import sendResponse from '../../utils/sendResponse';
 import httpStatus from 'http-status';
-import config from '../../config';
 
 
 const checkout = catchAsync(async (req: Request, res: Response) => {

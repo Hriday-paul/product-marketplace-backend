@@ -3,18 +3,14 @@ import catchAsync from '../../../utils/catchAsync';
 import AppError from '../../../error/AppError';
 import sendResponse from '../../../utils/sendResponse';
 import { propertyService } from './property.service';
-import { access_productService } from '../../access_product/access_products.service';
 import { uploadManyToS3 } from '../../../utils/s3';
-import { productService } from '../../products/products.service';
+import { paymentsService } from '../../payments/payments.service';
 
 const addPropertySell = catchAsync(async (req, res) => {
 
     const files = req.files as Express.Multer.File[];
 
     let filePaths: string[] = [];
-
-    // ---------------check access to add product-----------
-    await access_productService.checkAccess(req.user._id, "propertie_sell")
 
     if (files) {
         const imgsArray: { file: any; path: string; key?: string }[] = [];
@@ -48,10 +44,10 @@ const addPropertySell = catchAsync(async (req, res) => {
 
     req.body.location = { type: "Point", coordinates: [req.body.long, req.body.lat] };
 
-    const result = await propertyService.addPropertySell(req.body)
+    await propertyService.addPropertySell(req.body)
 
-    // ------------send notification----------------
-    productService.sendNotificationAfterAddProduct(req.user._id, result?._id);
+    // get payment link
+    const result = await paymentsService.checkout(req.body?.package, req.user._id);
 
     sendResponse(res, {
         statusCode: httpStatus.OK,
@@ -66,9 +62,6 @@ const addPropertyRent = catchAsync(async (req, res) => {
     const files = req.files as Express.Multer.File[];
 
     let filePaths: string[] = [];
-
-    // ---------------check access to add product-----------
-    await access_productService.checkAccess(req.user._id, "propertie_rent")
 
     if (files) {
         const imgsArray: { file: any; path: string; key?: string }[] = [];
@@ -102,10 +95,8 @@ const addPropertyRent = catchAsync(async (req, res) => {
 
     req.body.location = { type: "Point", coordinates: [req.body.long, req.body.lat] }
 
-    const result = await propertyService.addPropertyRent(req.body);
-
-    // ------------send notification----------------
-    productService.sendNotificationAfterAddProduct(req.user._id, result?._id);
+    // get payment link
+    const result = await paymentsService.checkout(req.body?.package, req.user._id);
 
     sendResponse(res, {
         statusCode: httpStatus.OK,

@@ -1,12 +1,11 @@
-import config from "../../../config";
 import AppError from "../../../error/AppError";
 import catchAsync from "../../../utils/catchAsync";
 import httpStatus from "http-status";
 import sendResponse from "../../../utils/sendResponse";
 import { productService } from "../../products/products.service";
 import { carService } from "./car.service";
-import { access_productService } from "../../access_product/access_products.service";
 import { uploadManyToS3 } from "../../../utils/s3";
+import { paymentsService } from "../../payments/payments.service";
 
 
 const addCar = catchAsync(async (req, res) => {
@@ -14,9 +13,6 @@ const addCar = catchAsync(async (req, res) => {
     const files = req.files as Express.Multer.File[];
 
     let filePaths: string[] = [];
-
-    // ---------------check access to add product-----------
-    await access_productService.checkAccess(req.user._id, "car")
 
     if (files) {
         const imgsArray: { file: any; path: string; key?: string }[] = [];
@@ -42,7 +38,6 @@ const addCar = catchAsync(async (req, res) => {
     const user = req.user._id;
     req.body.user = user
     req.body.images = filePaths
-    req.body.isBoosted = false
     req.body.isDeleted = false
     req.body.productModel = "cars"
     req.body.category = "car"
@@ -52,10 +47,10 @@ const addCar = catchAsync(async (req, res) => {
 
     req.body.location = { type: "Point", coordinates: [req.body.long, req.body.lat] };
 
-    const result = await carService.addCar(req.body);
+    await carService.addCar(req.body);
 
-    // ------------send notification----------------
-    productService.sendNotificationAfterAddProduct(req.user._id, result?._id)
+    // get payment link
+    const result = await paymentsService.checkout(req.body?.package, req.user._id);
 
     sendResponse(res, {
         statusCode: httpStatus.OK,
@@ -71,9 +66,6 @@ const addCaravan = catchAsync(async (req, res) => {
     const files = req.files as Express.Multer.File[];
 
     let filePaths: string[] = [];
-
-    // ---------------check access to add product-----------
-    await access_productService.checkAccess(req.user._id, "caravan")
 
     if (files) {
         const imgsArray: { file: any; path: string; key?: string }[] = [];
@@ -109,10 +101,10 @@ const addCaravan = catchAsync(async (req, res) => {
 
     req.body.location = { type: "Point", coordinates: [req.body.long, req.body.lat] }
 
-    const result = await carService.addCaravan(req.body);
+    await carService.addCaravan(req.body);
 
-    // ------------send notification----------------
-    productService.sendNotificationAfterAddProduct(req.user._id, result?._id)
+    // get payment link
+    const result = await paymentsService.checkout(req.body?.package, req.user._id);
 
     sendResponse(res, {
         statusCode: httpStatus.OK,
@@ -128,9 +120,6 @@ const addBobil = catchAsync(async (req, res) => {
     const files = req.files as Express.Multer.File[];
 
     let filePaths: string[] = [];
-
-    // ---------------check access to add product-----------
-    await access_productService.checkAccess(req.user._id, "bobil")
 
     if (files) {
         const imgsArray: { file: any; path: string; key?: string }[] = [];
@@ -166,10 +155,10 @@ const addBobil = catchAsync(async (req, res) => {
 
     req.body.location = { type: "Point", coordinates: [req.body.long, req.body.lat] }
 
-    const result = await carService.addBobil(req.body);
+    await carService.addBobil(req.body);
 
-    // ------------send notification----------------
-    productService.sendNotificationAfterAddProduct(req.user._id, result?._id)
+    // get payment link
+    const result = await paymentsService.checkout(req.body?.package, req.user._id);
 
     sendResponse(res, {
         statusCode: httpStatus.OK,

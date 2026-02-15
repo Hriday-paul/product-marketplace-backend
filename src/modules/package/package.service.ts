@@ -3,8 +3,26 @@ import { IPackage } from "./package.interface"
 import Package from "./package.model";
 import httpStatus from 'http-status';
 
+export const listingPackageFeatures = {
+    basic: [
+        "Standard listing visibility",
+        "Appears in search results",
+        "Normal ranking position",
+        'No visual highlight'
+    ],
+
+    premium: [
+        "Higher search ranking",
+        "Top placement in category for 7 days",
+        "Highlighted listing badge",
+        "Priority customer support",
+    ],
+};
+
 //create a new package
 const create_Package = async (payload: IPackage) => {
+    const features = listingPackageFeatures[payload?.type];
+    payload.features = features;
     const packages = await Package.create(payload);
     if (!packages) {
         throw new AppError(
@@ -38,21 +56,21 @@ const delete_Package = async (id: string) => {
             'Package not found',
         );
     }
-    const packages = await Package.updateOne({ _id: id }, {isDeleted : true});
+    const packages = await Package.updateOne({ _id: id }, { isDeleted: true });
     return packages;
 }
 
 // get all packeges and filter by plan type
-const getPackages_by_type = async (category ?: string) => {
-    const query = category ? { isDeleted: false, category } : {isDeleted: false};
+const getPackages_by_type = async (category?: string) => {
+    const query = category ? { isDeleted: false, category } : { isDeleted: false };
 
-    const packages = await Package.find(query);
+    const packages = await Package.find(query).sort({ type: 1 });
     return packages;
 }
 
 // get packeges details
-const getPackages_details = async (id : string) => {
-    const packages = await Package.findOne({_id : id, isDeleted : false});
+const getPackages_details = async (id: string) => {
+    const packages = await Package.findOne({ _id: id, isDeleted: false });
     return packages;
 }
 

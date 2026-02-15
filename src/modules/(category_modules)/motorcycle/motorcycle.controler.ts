@@ -1,21 +1,16 @@
-import config from "../../../config";
 import catchAsync from "../../../utils/catchAsync";
 import sendResponse from "../../../utils/sendResponse";
 import httpStatus from 'http-status';
 import { motorcycleService } from "./motorcycle.service";
 import AppError from "../../../error/AppError";
-import { productService } from "../../products/products.service";
-import { access_productService } from "../../access_product/access_products.service";
 import { uploadManyToS3 } from "../../../utils/s3";
+import { paymentsService } from "../../payments/payments.service";
 
 const addMotorcycle = catchAsync(async (req, res) => {
 
     const files = req.files as Express.Multer.File[];
 
     let filePaths: string[] = [];
-
-    // ---------------check access to add product-----------
-    await access_productService.checkAccess(req.user._id, "motorcycle")
 
     if (files) {
         const imgsArray: { file: any; path: string; key?: string }[] = [];
@@ -50,10 +45,10 @@ const addMotorcycle = catchAsync(async (req, res) => {
 
     req.body.location = { type: "Point", coordinates: [req.body.long, req.body.lat] };
 
-    const result = await motorcycleService.addMotorcycle(req.body);
+    await motorcycleService.addMotorcycle(req.body);
 
-    // ------------send notification----------------
-    productService.sendNotificationAfterAddProduct(req.user._id, result?._id)
+    // get payment link
+    const result = await paymentsService.checkout(req.body?.package, req.user._id);
 
     sendResponse(res, {
         statusCode: httpStatus.OK,
