@@ -1,7 +1,6 @@
 import { body } from "express-validator";
 
 export const addBoatValidator = [
-  body('package').trim().not().isEmpty().withMessage('package is required').isMongoId().withMessage("Invalid package"),
   body('title').trim().not().isEmpty().withMessage('title is required').isString(),
   body('price').trim().escape().not().isEmpty().withMessage('Price is required').isNumeric().withMessage("Invalid Price type"),
   body('sellingPrice').trim().escape().not().isEmpty().withMessage('sellingPrice is required').isNumeric().withMessage("Invalid Price type"),

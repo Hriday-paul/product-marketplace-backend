@@ -4,7 +4,6 @@ import httpStatus from 'http-status';
 import AppError from "../../../error/AppError";
 import { othersProductService } from "./others.service";
 import { uploadManyToS3 } from "../../../utils/s3";
-import { paymentsService } from "../../payments/payments.service";
 
 
 const addOtherProduct = catchAsync(async (req, res) => {
@@ -44,11 +43,7 @@ const addOtherProduct = catchAsync(async (req, res) => {
 
     req.body.location = { type: "Point", coordinates: [req.body.long, req.body.lat] };
 
-
-    await othersProductService.addOtherProduct(req.body);
-
-    // get payment link
-    const result = await paymentsService.checkout(req.body?.package, req.user._id);
+    const result = await othersProductService.addOtherProduct(req.body);
 
     sendResponse(res, {
         statusCode: httpStatus.OK,

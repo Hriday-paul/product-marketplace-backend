@@ -44,10 +44,7 @@ const addPropertySell = catchAsync(async (req, res) => {
 
     req.body.location = { type: "Point", coordinates: [req.body.long, req.body.lat] };
 
-    await propertyService.addPropertySell(req.body)
-
-    // get payment link
-    const result = await paymentsService.checkout(req.body?.package, req.user._id);
+    const result = await propertyService.addPropertySell(req.body)
 
     sendResponse(res, {
         statusCode: httpStatus.OK,
@@ -95,8 +92,7 @@ const addPropertyRent = catchAsync(async (req, res) => {
 
     req.body.location = { type: "Point", coordinates: [req.body.long, req.body.lat] }
 
-    // get payment link
-    const result = await paymentsService.checkout(req.body?.package, req.user._id);
+    const result = await propertyService.addPropertyRent(req.body);
 
     sendResponse(res, {
         statusCode: httpStatus.OK,

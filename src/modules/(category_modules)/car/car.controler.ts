@@ -2,10 +2,8 @@ import AppError from "../../../error/AppError";
 import catchAsync from "../../../utils/catchAsync";
 import httpStatus from "http-status";
 import sendResponse from "../../../utils/sendResponse";
-import { productService } from "../../products/products.service";
 import { carService } from "./car.service";
 import { uploadManyToS3 } from "../../../utils/s3";
-import { paymentsService } from "../../payments/payments.service";
 
 
 const addCar = catchAsync(async (req, res) => {
@@ -47,10 +45,7 @@ const addCar = catchAsync(async (req, res) => {
 
     req.body.location = { type: "Point", coordinates: [req.body.long, req.body.lat] };
 
-    await carService.addCar(req.body);
-
-    // get payment link
-    const result = await paymentsService.checkout(req.body?.package, req.user._id);
+    const result = await carService.addCar(req.body);
 
     sendResponse(res, {
         statusCode: httpStatus.OK,
@@ -101,10 +96,7 @@ const addCaravan = catchAsync(async (req, res) => {
 
     req.body.location = { type: "Point", coordinates: [req.body.long, req.body.lat] }
 
-    await carService.addCaravan(req.body);
-
-    // get payment link
-    const result = await paymentsService.checkout(req.body?.package, req.user._id);
+    const result = await carService.addCaravan(req.body);
 
     sendResponse(res, {
         statusCode: httpStatus.OK,
@@ -155,10 +147,7 @@ const addBobil = catchAsync(async (req, res) => {
 
     req.body.location = { type: "Point", coordinates: [req.body.long, req.body.lat] }
 
-    await carService.addBobil(req.body);
-
-    // get payment link
-    const result = await paymentsService.checkout(req.body?.package, req.user._id);
+    const result = await carService.addBobil(req.body);
 
     sendResponse(res, {
         statusCode: httpStatus.OK,

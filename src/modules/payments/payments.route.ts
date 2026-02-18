@@ -3,10 +3,12 @@ import { paymentsController } from './payments.controller';
 import { USER_ROLE } from '../user/user.constants';
 import auth from '../../middleware/auth';
 import path from 'path';
+import { checkoutValidator } from './payments.validation';
+import req_validator from '../../middleware/req_validation';
 
 const router = Router();
 
-// router.post('/checkout', checkoutValidator, req_validator(), auth(USER_ROLE.user), paymentsController.checkout);
+router.post('/checkout', checkoutValidator, req_validator(), auth(USER_ROLE.user), paymentsController.checkout);
 
 // router.get(
 //   '/userpayment',

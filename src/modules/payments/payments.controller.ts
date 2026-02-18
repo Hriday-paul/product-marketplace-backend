@@ -3,10 +3,11 @@ import catchAsync from '../../utils/catchAsync';
 import { paymentsService } from './payments.service';
 import sendResponse from '../../utils/sendResponse';
 import httpStatus from 'http-status';
+import config from '../../config';
 
 
 const checkout = catchAsync(async (req: Request, res: Response) => {
-  const result = await paymentsService.checkout(req.body?.package, req.user._id);
+  const result = await paymentsService.checkout(req.body?.package, req.body?.productId, req.user._id);
   sendResponse(res, {
     success: true,
     statusCode: httpStatus.OK,
@@ -17,14 +18,17 @@ const checkout = catchAsync(async (req: Request, res: Response) => {
 
 
 const confirmPayment = catchAsync(async (req: Request, res: Response) => {
+
   const result = await paymentsService.confirmPayment(req?.query);
-  // res.redirect(`${config.client_Url}${config.success_url}&paymentId=${result?._id}`);
-  sendResponse(res, {
-    success: true,
-    statusCode: httpStatus.OK,
-    data: result,
-    message: 'payment successful',
-  });
+  
+  res.redirect(`${config.BASE_URL}${config.success_url}`);
+
+  // sendResponse(res, {
+  //   success: true,
+  //   statusCode: httpStatus.OK,
+  //   data: result,
+  //   message: 'payment successful',
+  // });
 });
 
 const getPaymentsByUserId = catchAsync(async (req: Request, res: Response) => {

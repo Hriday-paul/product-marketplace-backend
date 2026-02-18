@@ -1,5 +1,4 @@
 import { IProduct } from "../../products/products.interface";
-import { IOtherProduct } from "./others.interface";
 import { OthersProduct } from "./others.model";
 
 

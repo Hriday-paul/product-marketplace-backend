@@ -4,7 +4,6 @@ import httpStatus from 'http-status';
 import AppError from "../../../error/AppError";
 import { jobService } from "./job.service";
 import { uploadManyToS3 } from "../../../utils/s3";
-import { paymentsService } from "../../payments/payments.service";
 
 const addJob = catchAsync(async (req, res) => {
 
@@ -44,10 +43,7 @@ const addJob = catchAsync(async (req, res) => {
 
     req.body.location = { type: "Point", coordinates: [req.body.long, req.body.lat] };
 
-    await jobService.addJob(req.body)
-
-    // get payment link
-    const result = await paymentsService.checkout(req.body?.package, req.user._id);
+    const result = await jobService.addJob(req.body)
 
     sendResponse(res, {
         statusCode: httpStatus.OK,

@@ -45,10 +45,7 @@ const addMotorcycle = catchAsync(async (req, res) => {
 
     req.body.location = { type: "Point", coordinates: [req.body.long, req.body.lat] };
 
-    await motorcycleService.addMotorcycle(req.body);
-
-    // get payment link
-    const result = await paymentsService.checkout(req.body?.package, req.user._id);
+    const result = await motorcycleService.addMotorcycle(req.body);
 
     sendResponse(res, {
         statusCode: httpStatus.OK,

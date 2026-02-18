@@ -719,6 +719,7 @@ const sendNotificationAfterAddProduct = async (userId: string, productId: Object
     return null;
 }
 
+
 export const productService = {
     allProducts,
     myProducts,

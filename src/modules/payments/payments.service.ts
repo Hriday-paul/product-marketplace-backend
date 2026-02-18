@@ -24,7 +24,7 @@ const stripe = new Stripe(config.stripe?.stripe_api_secret as string, {
 });
 
 //-----------------create acheck out url---------------------
-const checkout = async (packageId: string, userId: string) => {
+const checkout = async (packageId: string, productId : string, userId: string) => {
   const tranId = generateRandomString(10);
 
   const foundPackage: IPackage | null = await Package.findById(
@@ -47,8 +47,9 @@ const checkout = async (packageId: string, userId: string) => {
     {
       isPaid: false,
       user: userId,
+      product : productId
     },
-    { user: userId, tranId, total_amount: foundPackage?.price, expiredAt, startedAt, package: foundPackage?._id, isPaid: false },
+    { user: userId, tranId, total_amount: foundPackage?.price, expiredAt, startedAt, package: foundPackage?._id, isPaid: false, product : productId },
     { new: true, upsert: true },
   ).populate("user") as INewPayment;
 
