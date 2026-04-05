@@ -4,7 +4,6 @@ import httpStatus from 'http-status';
 import AppError from "../../../error/AppError";
 import { boatService } from "./boat.service";
 import { uploadManyToS3 } from "../../../utils/s3";
-import { paymentsService } from "../../payments/payments.service";
 
 const addBoat = catchAsync(async (req, res) => {
 

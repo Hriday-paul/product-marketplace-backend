@@ -7,6 +7,7 @@ import httpStatus from 'http-status';
 import AppError from '../error/AppError';
 import config from '../config';
 import { s3Client } from '../constants/aws';
+import FsPath from "path";
 
 //upload a single file
 export const uploadToS3 = async ({
@@ -62,11 +63,14 @@ export const uploadManyToS3 = async (
 ): Promise<{ url: string; key: string }[]> => {
   try {
     const uploadPromises = files.map(async ({ file, path, key }) => {
+
+      const ext = file?.originalname ? FsPath.extname(file.originalname) : "";
+
       const newFileName = key
         ? key
         : `${Math.floor(100000 + Math.random() * 900000)}${Date.now()}`;
 
-      const fileKey = `${path}/${newFileName}`;
+      const fileKey = `${path}/${newFileName}${ext}`;
       const command = new PutObjectCommand({
         Bucket: config.aws.bucket as string,
         Key: fileKey,
@@ -83,7 +87,7 @@ export const uploadManyToS3 = async (
 
       const isImage = mimeType.startsWith("image/");
 
-      return { url, key: newFileName, type : isImage ? "image" : "document" };
+      return { url, key: newFileName, type: isImage ? "image" : "document" };
     });
 
     const uploadedUrls = await Promise.all(uploadPromises);

@@ -1,5 +1,5 @@
-import config from "../../config";
 import catchAsync from "../../utils/catchAsync";
+import { uploadManyToS3 } from "../../utils/s3";
 import sendResponse from "../../utils/sendResponse";
 import { productService } from "./products.service";
 import httpStatus from 'http-status'
@@ -81,13 +81,23 @@ const updateProduct = catchAsync(async (req, res) => {
 
     const files = req.files as Express.Multer.File[];
 
-    const filePaths = files.map(file => {
-        return file?.filename && (config.BASE_URL + '/images/' + file.filename) || '';
-    });
+    let filePaths: string[] = [];
 
+    if (files) {
+        const imgsArray: { file: any; path: string; key?: string }[] = [];
 
+        files?.map(image => {
+            imgsArray.push({
+                file: image,
+                path: `images/products/images`,
+            });
+        });
 
-    const result = await productService.updateProduct(req.body, req.params.id, filePaths)
+        const urls = await uploadManyToS3(imgsArray);
+        filePaths = urls?.map(i => i?.url);
+    }
+
+    const result = await productService.updateProduct(req.body, req.params.id, filePaths, req?.user?._id)
 
     sendResponse(res, {
         statusCode: httpStatus.OK,

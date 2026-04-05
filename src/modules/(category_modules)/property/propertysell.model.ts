@@ -4,7 +4,7 @@ import { Products } from '../../products/products.model';
 
 const PropertySellSchema = new Schema<IPropertySell>(
     {
-        propertyType: { type: String, required: true },
+        propertyType: { type: String },
         address: { type: String },
         accessDescription: String,
         locationDescription: String,

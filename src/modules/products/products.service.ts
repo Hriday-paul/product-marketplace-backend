@@ -1,4 +1,4 @@
-import { Types } from "mongoose";
+import { Model, Types } from "mongoose";
 import AppError from "../../error/AppError";
 import { sendMultipleNotification, sendNotification } from "../notification/notification.utils";
 import Search from "../searches/searches.model";
@@ -8,6 +8,15 @@ import { Products } from "./products.model";
 import httpStatus from 'http-status'
 import { ObjectId } from "mongodb"
 import { INotification } from "../notification/notification.inerface";
+import { Bobil, Caravan, CarModel } from "../(category_modules)/car/car.model";
+import { Boat } from "../(category_modules)/boat/boat.model";
+import { Motorcycles } from "../(category_modules)/motorcycle/motorcycle.model";
+import { Job } from "../(category_modules)/job/job.model";
+import { OthersProduct } from "../(category_modules)/others/others.model";
+import { PropertySellModel } from "../(category_modules)/property/propertysell.model";
+import { PropertyRentModel } from "../(category_modules)/property/propertyrent.model";
+import { Favorites } from "../favourites/favourites.model";
+import { IUser } from "../user/user.interface";
 
 const allProducts = async (query: Record<string, any>) => {
     const page = parseInt(query?.page) || 1;
@@ -143,7 +152,6 @@ const allProducts = async (query: Record<string, any>) => {
         },
     };
 };
-
 
 const myProducts = async (query: Record<string, any>, userId: string) => {
 
@@ -542,13 +550,21 @@ interface upPRod extends IProduct {
     long?: number;
 }
 
-const updateProduct = async (body: upPRod, productId: string, newImages: string[]) => {
+const discriminatorMap: Record<string, Model<any>> = {
+    cars: CarModel,
+    caravans: Caravan,
+    bobils: Bobil,
+    boats: Boat,
+    motorcycles: Motorcycles,
+    jobs: Job,
+    others: OthersProduct,
+    properties_sell: PropertySellModel,
+    properties_rent: PropertyRentModel,
+};
 
-    const { isPremium, boostActivatedAt, boostExpiresAt, createdAt, updatedAt, isDeleted, user, isPaid, ...payload } = body;
+const updateProduct = async (body: upPRod, productId: string, newImages: string[], userId: string) => {
 
-    if (Object.keys(payload).length === 0) {
-        throw new AppError(httpStatus.BAD_REQUEST, 'No valid fields to update');
-    }
+    const { isPremium, boostActivatedAt, boostExpiresAt, createdAt, updatedAt, isDeleted, user, isPaid, total_views, ...payload } = body;
 
     const isExist = await Products.findById(productId);
     if (!isExist) {
@@ -558,6 +574,11 @@ const updateProduct = async (body: upPRod, productId: string, newImages: string[
     // check item is paid and isdeleted
     if (!isExist?.isPaid || isExist?.isDeleted) {
         throw new AppError(httpStatus.CONFLICT, 'Item unavailble for update');
+    }
+
+    //owner check
+    if (isExist?.user!.toString() !== userId) {
+        throw new AppError(httpStatus.BAD_REQUEST, 'Access Denied');
     }
 
     // Build updated images array
@@ -585,9 +606,14 @@ const updateProduct = async (body: upPRod, productId: string, newImages: string[
         delete payload.long;
     }
 
+    if (Object.keys(payload).length === 0) {
+        throw new AppError(httpStatus.BAD_REQUEST, 'No valid fields to update');
+    }
+
+    const ProductModelClass = discriminatorMap[isExist.productModel] ?? Products;
 
     // Update the product
-    const result = await Products.updateOne(
+    const result = await ProductModelClass.updateOne(
         { _id: productId },
         { $set: payload },
         { runValidators: true }
@@ -600,9 +626,46 @@ const updateProduct = async (body: upPRod, productId: string, newImages: string[
         );
     }
 
-    return result;
+    //send notification to favourites users if price is changed
+    if (body?.price && isExist?.price > body?.price) {
+        SendNotificationToFavoriteProdUsers(isExist?._id, userId);
+    }
 
+    return result;
 }
+
+
+const SendNotificationToFavoriteProdUsers = async (productId: any, userId: string) => {
+    const favouriteUsers = await Favorites.find({ product: productId }).populate("user") as unknown as { product: IProduct, user: IUser }[];
+
+    const tokens = [];
+    const notifications: INotification[] = []
+
+    for (const favouriteProd of favouriteUsers) {
+
+        (favouriteProd?.user?.fcmToken && favouriteProd?.user.notification) && tokens.push(favouriteProd?.user?.fcmToken);
+
+        notifications.push({
+            title: `Price Drop on Your Favourite Listing`,
+            message: `A listing you favorited has been updated with a new price. Tap to view the latest details.`,
+            receiver: favouriteProd?.user?._id,
+            receiverEmail: favouriteProd?.user?.email,
+            receiverRole: favouriteProd?.user?.role,
+            sender: userId as any,
+            type: "product",
+            product: productId,
+        })
+    }
+
+    sendMultipleNotification(tokens, notifications,
+        {
+            title: `Price Drop on Your Favourite Listing`,
+            message: `A listing you favorited has been updated with a new price. Tap to view the latest details.`,
+        }
+    );
+
+};
+
 
 const deleteProduct = async (productId: string, userId: string) => {
 

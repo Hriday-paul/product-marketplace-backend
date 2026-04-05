@@ -33,6 +33,8 @@ export const video_Upload = multer({
         //     return cb(new Error('file type is not allowed'))
         // }
 
+        console.log(file);
+
         cb(null, true)
     },
 });

@@ -1,10 +1,10 @@
-import { Request, RequestHandler } from "express";
-import config from "../../config";
+import { RequestHandler } from "express";
 import catchAsync from "../../utils/catchAsync";
 import sendResponse from "../../utils/sendResponse";
 import { storiesService } from "./stories.service";
 import httpStatus from "http-status";
 import { uploadToS3 } from "../../utils/s3";
+import path from "path";
 
 const allStories = catchAsync(async (req, res) => {
     const result = await storiesService.allStories()
@@ -19,12 +19,15 @@ const allStories = catchAsync(async (req, res) => {
 const addStorie = catchAsync(async (req, res) => {
 
     let video;
-    // video = req.file?.filename && (config.BASE_URL + '/videos/' + req.file.filename);
+
+    const ext = req.file?.originalname ? path.extname(req.file.originalname) : "";
+
+    const newFileName = `${Math.floor(100000 + Math.random() * 900000)}${Date.now()}${ext}`;
 
     if (req.file) {
         video = await uploadToS3({
             file: req.file,
-            fileName: `videos/reels/${Math.floor(100000 + Math.random() * 900000)}`,
+            fileName: `videos/reels/${newFileName}`,
         });
     }
 

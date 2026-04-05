@@ -23,6 +23,14 @@ export const listingPackageFeatures = {
 const create_Package = async (payload: IPackage) => {
     const features = listingPackageFeatures[payload?.type];
     payload.features = features;
+
+    //check doublicate package in same type
+    const exist = await Package.findOne({ category: payload?.category, type: payload?.type, isDeleted: false });
+
+    if (exist) {
+        throw new AppError(httpStatus.CONFLICT, "Package already exist in this category")
+    }
+
     const packages = await Package.create(payload);
     if (!packages) {
         throw new AppError(
@@ -40,9 +48,17 @@ const update_Package = async (payload: IPackage, id: string) => {
     if (!exist) {
         throw new AppError(
             httpStatus.NOT_FOUND,
-            'Package not found',
+            'Package does not exist',
         );
     }
+
+    //check doublicate package in same type
+    const exist_pack = await Package.findOne({ _id: { $ne: id }, category: payload?.category, type: payload?.type, isDeleted: false });
+
+    if (exist_pack) {
+        throw new AppError(httpStatus.CONFLICT, "Package already exist in this category")
+    }
+
     const packages = await Package.updateOne({ _id: id }, { ...payload });
     return packages;
 }

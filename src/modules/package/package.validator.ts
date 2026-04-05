@@ -1,7 +1,6 @@
-import { check, query } from "express-validator";
+import { check } from "express-validator";
 
 export const addPackageValidator = [
-    check('title').trim().not().isEmpty().withMessage('title is required').isString().isLength({ min: 2 }).withMessage('title min length is 2'),
    
     check('price').trim().escape().not().isEmpty().withMessage('price is required').isNumeric().withMessage('invalid price format'),
 

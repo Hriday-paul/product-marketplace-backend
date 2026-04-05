@@ -4,7 +4,11 @@ import { packageService } from "./package.service"
 import sendResponse from "../../utils/sendResponse"
 
 const createPackage = catchAsync(async (req: Request, res: Response) => {
-    const result = await packageService.create_Package(req.body)
+    const body = req.body;
+    body.title = body?.type == "basic" ? "Basic" : "Premium"
+    
+    const result = await packageService.create_Package(body);
+    
     sendResponse(res, {
         statusCode: 200,
         success: true,
@@ -15,7 +19,10 @@ const createPackage = catchAsync(async (req: Request, res: Response) => {
 
 const updatePackage = catchAsync(async (req: Request, res: Response) => {
 
-    const result = await packageService.update_Package(req.body, req.params.id)
+    const body = req.body;
+    body.title = body?.type == "basic" ? "Basic" : "Premium"
+
+    const result = await packageService.update_Package(body, req.params.id)
     sendResponse(res, {
         statusCode: 200,
         success: true,

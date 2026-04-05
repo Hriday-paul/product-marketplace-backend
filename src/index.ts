@@ -17,7 +17,7 @@ const app: Express = express();
 multer();
 app.use(helmet.crossOriginResourcePolicy({ policy: "cross-origin" }));
 app.use(cors({
-  origin: ["https://sellx.no", "https://www.sellx.no"],
+  origin: ["https://sellx.no", "https://www.sellx.no", "http://localhost:3000"],
   credentials: true
 }));
 
